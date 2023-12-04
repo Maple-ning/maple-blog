@@ -1,0 +1,153 @@
+.layout-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.layout-content-main {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.footer-container {
+  text-align: center;
+  box-shadow: rgb(208, 215, 222) 0px 1px 0px 0px inset;
+}
+
+.bg {
+  background-image: url("/home.jpg");
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: fixed;
+  z-index: -1;
+}
+
+.bg,
+.bg:before {
+  height: 100%;
+  top: 0;
+  width: 100%;
+}
+
+.layout-header {
+  min-height: 64px;
+  width: 100%;
+  background: $blogs-header-bg;
+  box-shadow: rgb(208, 215, 222) 0px -1px 0px 0px inset;
+}
+
+.layout-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  height: 64px;
+}
+
+.top-nav {
+  height: 100%;
+  flex: 1 0 auto;
+  line-height: normal;
+  display: flex;
+}
+
+.nav-list {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  flex-direction: row-reverse;
+  height: 100%;
+  margin: 0;
+}
+
+.layout-menu-list {
+  height: 100%;
+  display: flex;
+  order: 99;
+  padding: 10px 0;
+  .layout-menu-wrapper {
+    background: transparent;
+    width: 500px;
+    border: none;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .layout-menu-item-selected {
+    background: $main-icon-color;
+    border-radius: 4px;
+    color: white;
+    .anticon {
+      color: white;
+    }
+  }
+  .layout-menu-item {
+    padding: 0 16px;
+    margin: 0 4px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    &:hover {
+      background: $main-icon-color;
+      border-radius: 4px;
+      color: white;
+      .anticon {
+        color: white;
+      }
+    }
+  }
+  .anticon {
+    color: $main-icon-color;
+  }
+  .layout-menu-item-content {
+    margin-left: 10px;
+  }
+}
+
+.item-logo {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  color: #d3b17d;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media screen and (max-width: 1028px) {
+  .layout-header {
+    display: none;
+  }
+  .mobile-header {
+    position: relative;
+    display: flex;
+    padding: 10px 24px;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    box-shadow: #d0d7de 0 -1px inset;
+    .mobile-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #d3b17d;;
+    }
+  }
+}

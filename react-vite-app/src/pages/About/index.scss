@@ -1,0 +1,73 @@
+
+.about-card {
+  min-height: 85vh;
+  padding: 16px;
+  display: flex;
+  background: #fff;
+}
+
+.profile-wrapper {
+  width: 25%;
+  padding: 16px;
+  margin-right: 10px;
+  border-right: 2px solid #e4e6eb;
+  .profile-box {
+    width: 100px;
+    height: 100px;
+    margin-right: 24px;
+    border-radius: 50%;
+    border: 1px solid gray;
+    margin: 16px auto;
+  }
+  .profile-box > img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .info-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .info-username {
+      font-size: 20px;
+      line-height: 60px;
+    }
+    .info-hobby {
+      font-size: 15px;
+      color: pink;
+      line-height: 30px;
+    }
+    .info-intro {
+      font-size: 15px;
+      color: #4a68ad;
+      line-height: 30px;
+    }
+    .info-social-platform {
+      width: 180px;
+      height: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    & > div:not(:last-child) {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.detail-wrapper {
+  flex: 1;
+  padding: 16px;
+}
+
+
+@media screen and (max-width: 1028px) {
+  .about-card {
+    flex-direction: column;
+    .profile-wrapper {
+      width: 100%;
+      border-right: 0;
+    }
+  }
+}

@@ -1,0 +1,56 @@
+// ant-desgin 公共样式修改入口
+
+//走马灯样式修改
+.ant-carousel {
+  height: 100%;
+  width: 100%;
+  .slick-slider {
+    height: 100%;
+    width: 100%;
+    padding-bottom: 20px;
+  }
+  .slick-list {
+    height: 100% !important;
+    width: 100%;
+  }
+  .slick-track {
+    color: #fff;
+    width: 100%;
+    height: 100%;
+  }
+  .slick-slide {
+    color: #fff;
+    width: 100%;
+    height: 100%;
+    div {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .home-dots {
+    li {
+      margin: 0 8px;
+    }
+    li.slick-active button {
+      background-color: skyblue;
+    }
+    li button {
+      background: #000;
+      height: 12px;
+      &:hover {
+        background-color: skyblue;
+      }
+    }
+  }
+}
+
+// layout
+.ant-layout {
+  background: none;
+}
+
+.layout-content-main {
+  overflow-y: scroll;
+}
+
+

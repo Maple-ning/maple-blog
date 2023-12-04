@@ -1,0 +1,36 @@
+// 全局样式入口
+@import "./variables.scss";
+@import "./basic.scss";
+@import "./ant-design.scss";
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img {
+  -webkit-user-drag: none; // 禁止拖动图片
+}
+
+// 公共滚动条样式
+::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #909297;
+}
+
+.basic-img {
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+  aspect-ratio: 16/9;
+  object-fit: fill;
+}

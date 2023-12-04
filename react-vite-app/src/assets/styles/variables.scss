@@ -1,0 +1,9 @@
+$bg-virtual: #fffffff0;
+$blogs-header-bg: #fff;
+$main-icon-color: #d3b17d;
+
+:export {
+  bgVirtual: $bg-virtual;
+  blogsHeaderBg: $blogs-header-bg;
+  mainIconColor: $main-icon-color;
+}
