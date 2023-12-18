@@ -1,0 +1,8 @@
+@import "./constant.scss";
+
+:export {
+  largeSize: $large-size;
+  mediumSize: $medium-size;
+  smallSize: $small-size;
+  topBarBg: $top-bar-bg;
+}

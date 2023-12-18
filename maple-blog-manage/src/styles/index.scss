@@ -1,0 +1,24 @@
+@import "./constant.scss";
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-bar-bg {
+  background-color: $top-bar-bg;
+}
+
+.page-root {
+  width: 1280px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+}
