@@ -1,16 +1,31 @@
-import { createRouter, createWebHistory } from "vue-router";
-import Ref from "@/pages/Ref/index.vue";
-import Reactive from "@/pages/Reactive/index.vue";
-import NotFound from "@/pages/error/404.vue";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import Layout from '@/pages/Layout/index.vue';
 
-const routes = [
-  { path: "/", component: Ref },
-  { path: "/reactive", component: Reactive },
-  { path: "/:path(.*)", component: NotFound }
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    redirect: '/dashboard',
+  },
+  {
+    path: '/',
+    name: 'Layout',
+    component: Layout,
+    children:[
+      {
+        path:'dashboard',
+        name:'Dashboard',
+        meta: {
+          title:'系统首页'
+        },
+        component: () => import('@/pages/dashboard/index.vue'),
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 })
 

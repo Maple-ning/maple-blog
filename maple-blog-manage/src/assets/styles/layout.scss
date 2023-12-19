@@ -1,0 +1,32 @@
+header {
+  height: 70px;
+  position: relative;
+  background-color: #242f42;
+}
+
+main {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar {
+  width: 200px;
+  height: 100%;
+  background-color: rgb(50, 65, 87);
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+}
+
+.content-box {
+  flex: 1;
+  background: #f0f0f0;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  overflow-y: scroll;
+}
