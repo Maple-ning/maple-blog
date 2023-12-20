@@ -1,7 +1,7 @@
 header {
-  height: 70px;
-  position: relative;
-  background-color: #242f42;
+  min-height: 64px;
+  background: #fff;
+  box-shadow: rgb(208, 215, 222) 0px -1px 0px 0px inset;
 }
 
 main {
@@ -16,6 +16,9 @@ main {
   overflow-y: scroll;
   &::-webkit-scrollbar {
     width: 0;
+  }
+  .sidebar-el-menu {
+    height: 100%;
   }
 }
 
