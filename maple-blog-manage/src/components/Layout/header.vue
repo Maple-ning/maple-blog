@@ -2,6 +2,10 @@
   <header>
     <div class="header-bar">
       <div class="item-logo">
+        <div class="collapse-btn" @click="collapseChage">
+          <el-icon v-if="sidebar.collapse"><Expand /></el-icon>
+          <el-icon v-else><Fold /></el-icon>
+        </div>
         <img src="/maple.svg" />
         枫叶之家
       </div>
@@ -31,29 +35,44 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import { ArrowDown } from "@element-plus/icons-vue";
+import { useSidebarStore } from "@/store/sidebar";
+
+const sidebar = useSidebarStore();
+// 侧边栏折叠
+const collapseChage = () => {
+  sidebar.handleCollapse();
+};
 
 // 用户名下拉菜单选择事件
 const router = useRouter();
 const handleCommand = (command: string) => {
-	if (command == 'loginout') {
-		localStorage.removeItem('ms_username');
-		router.push('/login');
-	} else if (command == 'user') {
-		router.push('/user');
-	}
+  if (command == "loginout") {
+    localStorage.removeItem("ms_username");
+    router.push("/login");
+  } else if (command == "user") {
+    router.push("/user");
+  }
 };
 </script>
 
 <style lang="scss" scoped>
 .header-bar {
   height: 100%;
-  max-width: 1440px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.collapse-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  float: left;
+  padding: 0 21px;
+  cursor: pointer;
 }
 .item-logo {
   height: 100%;

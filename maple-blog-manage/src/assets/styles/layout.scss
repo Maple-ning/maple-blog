@@ -1,5 +1,6 @@
 header {
   min-height: 64px;
+  padding-right: 80px;
   background: #fff;
   box-shadow: rgb(208, 215, 222) 0px -1px 0px 0px inset;
 }
@@ -10,7 +11,6 @@ main {
 }
 
 .sidebar {
-  width: 200px;
   height: 100%;
   background-color: rgb(50, 65, 87);
   overflow-y: scroll;
