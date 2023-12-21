@@ -87,6 +87,21 @@ const items = [
       },
     ],
   },
+  {
+    icon: "CoffeeCup",
+    index: "/data",
+    title: "我的数据",
+    subs: [
+      {
+        index: "/data/article",
+        title: "文章数据",
+      },
+      {
+        index: "/data/weekend",
+        title: "一周小结",
+      },
+    ],
+  },
 ];
 
 const route = useRoute();

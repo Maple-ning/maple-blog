@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
-import Layout from '@/pages/Layout/index.vue';
+import Layout from '@/pages/layout/index.vue';
 
 
 const routes: RouteRecordRaw[] = [
@@ -52,6 +52,31 @@ const routes: RouteRecordRaw[] = [
             component: () => import('@/pages/content/review/index.vue'),
           },
         ]
+      },
+      {
+        path: 'data',
+        name: 'Data',
+        meta: {
+          title: '我的数据',
+        },
+        children: [
+          {
+            path: '/data/article',
+            name: 'Article',
+            meta: {
+              title: '文章数据',
+            },
+            component: () => import('@/pages/data/article/index.vue'),
+          },
+          {
+            path: '/data/weekend',
+            name: 'Weekend',
+            meta: {
+              title: '一周小结',
+            },
+            component: () => import('@/pages/data/weekend/index.vue'),
+          },
+        ],
       },
       {
         path: '404',
