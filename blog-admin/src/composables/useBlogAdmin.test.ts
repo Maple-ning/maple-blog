@@ -47,7 +47,6 @@ describe('useBlogAdmin', () => {
         content: 'content',
         tags: '["vue"]',
         date: '2026-03-01T12:00:00.000Z',
-        category: 'tech',
         status: 'published',
       },
     ] as never);

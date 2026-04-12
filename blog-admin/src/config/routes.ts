@@ -19,15 +19,17 @@ export const routes: RouteRecordRaw[] = [
       },
       {
         path: 'posts/tech',
-        name: 'manage-tech-posts',
-        component: () => import('@/pages/manage-tech-posts/index.vue'),
-        meta: { title: '学习记录管理' },
+        redirect: { name: 'manage-posts' },
       },
       {
         path: 'posts/review',
-        name: 'manage-review-posts',
-        component: () => import('@/pages/manage-review-posts/index.vue'),
-        meta: { title: '学习笔记' },
+        redirect: { name: 'manage-posts' },
+      },
+      {
+        path: 'posts',
+        name: 'manage-posts',
+        component: () => import('@/pages/manage-posts/index.vue'),
+        meta: { title: '博文管理' },
       },
       {
         path: 'projects',

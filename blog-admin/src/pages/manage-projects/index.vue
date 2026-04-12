@@ -59,12 +59,12 @@ const editItem = (id: number) => {
 };
 
 const submit = async () => {
-  if (!form.name || !form.description || !form.url) return;
+  if (!form.name || !form.description) return;
   const normalizedUrl = normalizeHttpUrl(form.url);
   const normalizedSourceCodeUrl = normalizeHttpUrl(form.sourceCodeUrl);
 
-  if (!isHttpUrl(normalizedUrl)) {
-    message.warning('项目地址需为 http/https 链接');
+  if (normalizedUrl && !isHttpUrl(normalizedUrl)) {
+    message.warning('体验地址需为 http/https 链接');
     return;
   }
   if (normalizedSourceCodeUrl && !isHttpUrl(normalizedSourceCodeUrl)) {
@@ -105,12 +105,13 @@ onMounted(init);
           </div>
           <div class="mt-1 space-y-1">
             <a
+              v-if="item.url"
               :href="item.url"
               target="_blank"
               rel="noreferrer noopener"
               class="block text-xs text-blue-600 hover:underline"
             >
-              线上地址：{{ item.url }}
+              体验地址：{{ item.url }}
             </a>
             <a
               v-if="item.sourceCodeUrl"
@@ -144,7 +145,7 @@ onMounted(init);
     >
       <div class="grid gap-3">
         <a-input v-model:value="form.name" placeholder="项目名称" />
-        <a-input v-model:value="form.url" placeholder="项目地址" />
+        <a-input v-model:value="form.url" placeholder="体验 / 线上地址（可选）" />
         <a-input v-model:value="form.sourceCodeUrl" placeholder="源码地址（可选）" />
         <a-input v-model:value="form.techStackText" placeholder="技术栈，逗号分隔" />
         <a-textarea v-model:value="form.description" :rows="5" placeholder="项目介绍" />

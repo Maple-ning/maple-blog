@@ -2,9 +2,43 @@
 <html lang="">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="icon" type="image/svg+xml" href="/maple.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>__APP_TITLE__</title>
+    <script>
+      (function () {
+        try {
+          var allowed = {
+            cyber: 1,
+            aurora: 1,
+            solar: 1,
+            void: 1,
+            ember: 1,
+            moss: 1,
+            ink: 1,
+            sakura: 1,
+            frost: 1,
+            mono: 1,
+          };
+          var light = { sakura: 1, frost: 1, mono: 1 };
+          var t = localStorage.getItem('nova-theme');
+          if (!t || !allowed[t]) {
+            var legacy = localStorage.getItem('theme-mode');
+            if (legacy === 'light') t = 'sakura';
+            else if (legacy === 'dark') t = 'ink';
+            else t = 'ink';
+          }
+          document.documentElement.dataset.novaTheme = t;
+          document.documentElement.classList.toggle('dark', !light[t]);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

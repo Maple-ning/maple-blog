@@ -1,15 +1,11 @@
 const pool = require('../config/db')
 
 const getPosts = async (req, res) => {
-  const { category, status } = req.query
+  const { status } = req.query
   try {
     const params = []
     let sql = 'SELECT * FROM posts'
     const conditions = []
-    if (category) {
-      conditions.push('category = ?')
-      params.push(category)
-    }
     if (req.user) {
       if (status) {
         conditions.push('status = ?')
@@ -31,14 +27,14 @@ const getPosts = async (req, res) => {
 }
 
 const createPost = async (req, res) => {
-  const { title, summary, content, tags = [], date, category, status = 'draft' } = req.body
-  if (!title || !summary || !date || !category) {
+  const { title, summary, content, tags = [], date, status = 'draft' } = req.body
+  if (!title || !summary || !date) {
     return res.status(400).json({ message: '缺少必要字段' })
   }
   try {
     const [result] = await pool.query(
-      'INSERT INTO posts (title, summary, content, tags, date, category, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [title, summary, content || '', JSON.stringify(tags), date, category, status],
+      'INSERT INTO posts (title, summary, content, tags, date, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, summary, content || '', JSON.stringify(tags), date, status],
     )
     res.status(201).json({ id: result.insertId })
   } catch (error) {
@@ -48,11 +44,11 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
   const { id } = req.params
-  const { title, summary, content, tags = [], date, category, status = 'draft' } = req.body
+  const { title, summary, content, tags = [], date, status = 'draft' } = req.body
   try {
     const [result] = await pool.query(
-      'UPDATE posts SET title = ?, summary = ?, content = ?, tags = ?, date = ?, category = ?, status = ? WHERE id = ?',
-      [title, summary, content || '', JSON.stringify(tags), date, category, status, id],
+      'UPDATE posts SET title = ?, summary = ?, content = ?, tags = ?, date = ?, status = ? WHERE id = ?',
+      [title, summary, content || '', JSON.stringify(tags), date, status, id],
     )
     if (result.affectedRows === 0) return res.status(404).json({ message: '文章不存在' })
     res.json({ message: '更新成功' })

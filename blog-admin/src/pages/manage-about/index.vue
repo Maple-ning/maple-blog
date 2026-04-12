@@ -19,6 +19,7 @@ const form = reactive({
   focusPointsText: about.value.focusPoints.join('\n'),
   email: about.value.email,
   github: about.value.github,
+  siteAbout: about.value.siteAbout,
 });
 
 const submit = async () => {
@@ -32,6 +33,7 @@ const submit = async () => {
       .filter(Boolean),
     email: form.email,
     github: form.github,
+    siteAbout: form.siteAbout,
   });
 };
 
@@ -44,6 +46,7 @@ watch(
     form.focusPointsText = value.focusPoints.join('\n');
     form.email = value.email;
     form.github = value.github;
+    form.siteAbout = value.siteAbout;
   },
   { immediate: true }
 );
@@ -61,6 +64,11 @@ onMounted(init);
         <a-input v-model:value="form.github" placeholder="GitHub 主页，如 github.com/你的用户名" />
         <a-textarea v-model:value="form.intro" :rows="6" placeholder="个人介绍" />
         <a-textarea v-model:value="form.focusPointsText" :rows="5" placeholder="我在做什么（每行一条）" />
+        <a-textarea
+          v-model:value="form.siteAbout"
+          :rows="4"
+          placeholder="关于本站（显示在简介页「关于本站」卡片，留空则用前台默认文案）"
+        />
         <a-button type="primary" @click="submit">保存</a-button>
       </div>
     </a-card>
@@ -84,6 +92,10 @@ onMounted(init);
           {{ about.github }}
         </a>
       </p>
+      <div v-if="about.siteAbout?.trim()" class="mt-4 border-t border-slate-200 pt-3">
+        <p class="text-xs font-medium text-slate-500">关于本站</p>
+        <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ about.siteAbout }}</p>
+      </div>
     </a-card>
   </section>
 </template>

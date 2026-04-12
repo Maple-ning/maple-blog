@@ -3,9 +3,9 @@ import { computed, onMounted } from 'vue';
 
 import { useBlogAdmin } from '@/composables/useBlogAdmin';
 
-const { postsByCategory, postsByStatus, projects, goodSites, about, init } = useBlogAdmin();
-const techCount = computed(() => postsByCategory('tech').length);
-const reviewCount = computed(() => postsByCategory('review').length);
+const { posts, postsByStatus, projects, goodSites, about, init } = useBlogAdmin();
+const postTotal = computed(() => posts.value.length);
+const publishedCount = computed(() => postsByStatus('published').length);
 const draftCount = computed(() => postsByStatus('draft').length);
 
 onMounted(() => {
@@ -24,12 +24,12 @@ onMounted(() => {
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
       <a-card>
-        <p class="text-sm text-slate-500">学习记录</p>
-        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ techCount }}</p>
+        <p class="text-sm text-slate-500">博文总数</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ postTotal }}</p>
       </a-card>
       <a-card>
-        <p class="text-sm text-slate-500">学习笔记</p>
-        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ reviewCount }}</p>
+        <p class="text-sm text-slate-500">已发布</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ publishedCount }}</p>
       </a-card>
       <a-card>
         <p class="text-sm text-slate-500">项目展示</p>
@@ -53,7 +53,7 @@ onMounted(() => {
 
       <a-card title="维护建议">
         <ul class="space-y-2 text-sm text-slate-600">
-          <li>每周至少更新 1 篇学习记录。</li>
+          <li>在「博文管理」中维护文章与草稿。</li>
           <li>优先清理长期草稿，保持内容新鲜。</li>
           <li>项目与好站建议补充描述，提升前台可读性。</li>
         </ul>

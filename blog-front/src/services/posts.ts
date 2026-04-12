@@ -1,14 +1,11 @@
 import { getPublishedPostsApi } from '@/api/modules/posts';
 
-export type PostCategory = 'tech' | 'review';
-
 export interface PostItem {
   id: number;
   title: string;
   slug: string;
   date: string;
   tags: string[];
-  category: PostCategory;
   status: 'draft' | 'published';
   summary: string;
   content: string;
@@ -44,7 +41,6 @@ export const loadPosts = async (): Promise<PostItem[]> => {
         slug: String(item.id),
         date: String(item.date ?? '').slice(0, 10),
         tags: toStringArray(item.tags),
-        category: item.category === 'review' ? 'review' : 'tech',
         status: item.status === 'published' ? 'published' : 'draft',
         summary: String(item.summary ?? ''),
         content: String(item.content ?? ''),
@@ -55,10 +51,7 @@ export const loadPosts = async (): Promise<PostItem[]> => {
   return postsCache;
 };
 
-export const getPostsByCategory = async (category: PostCategory): Promise<PostItem[]> => {
-  const posts = await loadPosts();
-  return posts.filter((post) => post.category === category);
-};
+export const getAllPublishedPosts = async (): Promise<PostItem[]> => loadPosts();
 
 export const getPostBySlug = async (slug: string): Promise<PostItem | undefined> => {
   const posts = await loadPosts();

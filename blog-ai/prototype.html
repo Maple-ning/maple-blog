@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI实验室 · 个人主站</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ==============================
+       设计令牌系统 (Design Tokens)
+    ============================== */
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #0f1628;
+      --bg-card: #131929;
+      --bg-card-hover: #1a2235;
+      --bg-glass: rgba(19, 25, 41, 0.8);
+
+      --accent-primary: #4f8eff;
+      --accent-secondary: #7c5cfc;
+      --accent-teal: #00d4b1;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+
+      --gradient-hero: linear-gradient(135deg, #4f8eff 0%, #7c5cfc 50%, #00d4b1 100%);
+      --gradient-card: linear-gradient(135deg, #1a2235 0%, #131929 100%);
+      --gradient-glow: radial-gradient(ellipse at center, rgba(79, 142, 255, 0.15) 0%, transparent 70%);
+
+      --text-primary: #f0f4ff;
+      --text-secondary: #8b9cc5;
+      --text-muted: #4a567a;
+      --text-accent: #4f8eff;
+
+      --border-default: rgba(79, 142, 255, 0.12);
+      --border-hover: rgba(79, 142, 255, 0.3);
+      --border-glow: rgba(79, 142, 255, 0.5);
+
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --space-24: 6rem;
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 30px rgba(79, 142, 255, 0.2);
+
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ==============================
+       重置与基础样式
+    ============================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 全局背景网格 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79, 142, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 142, 255, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img { max-width: 100%; }
+
+    /* ==============================
+       导航栏
+    ============================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 64px;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-default);
+      transition: all var(--transition-normal);
+    }
+
+    .navbar.scrolled {
+      border-bottom-color: var(--border-hover);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 var(--space-8);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient-hero);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-text {
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      list-style: none;
+    }
+
+    .nav-links a {
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text-primary);
+      background: rgba(79, 142, 255, 0.1);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--gradient-hero);
+      color: white;
+      box-shadow: 0 0 20px rgba(79, 142, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(79, 142, 255, 0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+      background: rgba(79, 142, 255, 0.08);
+    }
+
+    /* 汉堡菜单 */
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: var(--space-2);
+      background: none;
+      border: none;
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text-secondary);
+      border-radius: 2px;
+      transition: all var(--transition-fast);
+    }
+
+    /* ==============================
+       英雄区 (Hero)
+    ============================== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 64px;
+      overflow: hidden;
+    }
+
+    /* 背景光晕效果 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(79, 142, 255, 0.12) 0%, rgba(124, 92, 252, 0.08) 50%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: var(--space-20) var(--space-8) var(--space-16);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-4);
+      background: rgba(79, 142, 255, 0.1);
+      border: 1px solid rgba(79, 142, 255, 0.2);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--accent-primary);
+      margin-bottom: var(--space-6);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent-teal);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: var(--space-6);
+      animation: fadeInUp 0.6s ease 0.1s both;
+    }
+
+    .hero-title-gradient {
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: var(--space-8);
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s ease 0.3s both;
+      margin-bottom: var(--space-16);
+    }
+
+    .hero-actions .btn {
+      padding: var(--space-3) var(--space-8);
+      font-size: 1rem;
+    }
+
+    /* 统计数字 */
+    .hero-stats {
+      display: flex;
+      gap: var(--space-12);
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.04em;
+    }
+
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* 浮动卡片装饰 */
+    .hero-deco {
+      position: absolute;
+      right: 8%;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      animation: fadeInRight 0.8s ease 0.5s both;
+    }
+
+    .deco-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-6);
+      width: 280px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-lg);
+      transition: all var(--transition-normal);
+    }
+
+    .deco-card:hover {
+      border-color: var(--border-hover);
+      transform: translateX(-4px);
+    }
+
+    .deco-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .deco-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+    }
+
+    .deco-card-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .deco-card-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .deco-progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: var(--space-2);
+    }
+
+    .deco-progress-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--gradient-hero);
+    }
+
+    /* ==============================
+       通用 Section 容器
+    ============================== */
+    .section {
+      padding: var(--space-20) 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 var(--space-8);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: var(--space-12);
+      gap: var(--space-4);
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-2);
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    .section-title span {
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-3);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .view-all {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap var(--transition-fast);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .view-all:hover { gap: var(--space-2); }
+
+    /* ==============================
+       文章卡片网格
+    ============================== */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    .post-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .post-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-hero);
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+      border-radius: var(--radius-lg);
+      z-index: 0;
+    }
+
+    .post-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+
+    .post-card:hover::before { opacity: 0.03; }
+
+    .post-card-cover {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .post-card-body {
+      padding: var(--space-6);
+      position: relative;
+      z-index: 1;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tag-blue { background: rgba(79, 142, 255, 0.15); color: var(--accent-primary); }
+    .tag-purple { background: rgba(124, 92, 252, 0.15); color: #a78bfa; }
+    .tag-teal { background: rgba(0, 212, 177, 0.15); color: var(--accent-teal); }
+    .tag-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .tag-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+    .post-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .post-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: var(--space-2);
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .post-excerpt {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .post-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-default);
+    }
+
+    .post-reading {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .post-arrow {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(79, 142, 255, 0.1);
+      border: 1px solid rgba(79, 142, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--accent-primary);
+      transition: all var(--transition-fast);
+    }
+
+    .post-card:hover .post-arrow {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    /* 精选文章（大卡片） */
+    .post-card-featured {
+      grid-column: span 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .post-card-featured .post-card-cover {
+      height: 100%;
+      min-height: 200px;
+      font-size: 4rem;
+    }
+
+    .post-card-featured .post-title {
+      font-size: 1.25rem;
+    }
+
+    /* ==============================
+       项目作品
+    ============================== */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+
+    .project-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .project-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .project-links {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .project-link {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+
+    .project-link:hover {
+      color: var(--accent-primary);
+      border-color: var(--border-hover);
+      background: rgba(79, 142, 255, 0.08);
+    }
+
+    .project-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      letter-spacing: -0.01em;
+    }
+
+    .project-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: var(--space-4);
+    }
+
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .tech-chip {
+      padding: 3px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .project-stats {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-default);
+    }
+
+    .project-stat {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .project-stat strong {
+      color: var(--text-primary);
+    }
+
+    /* ==============================
+       深度评测
+    ============================== */
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .review-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-6);
+      align-items: center;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .review-item:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+      transform: translateX(4px);
+    }
+
+    .review-rank {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      width: 40px;
+      text-align: center;
+    }
+
+    .review-rank.top { color: var(--accent-amber); }
+
+    .review-body {}
+
+    .review-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+
+    .review-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .review-score {
+      text-align: right;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ==============================
+       知识库 / AI 词汇
+    ============================== */
+    .knowledge-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+    }
+
+    .knowledge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .knowledge-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md), var(--shadow-glow);
+    }
+
+    .knowledge-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: var(--space-3);
+    }
+
+    .knowledge-name {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+
+    .knowledge-desc {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .knowledge-count {
+      margin-top: var(--space-3);
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* ==============================
+       行业周报
+    ============================== */
+    .weekly-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+
+    .weekly-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .weekly-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md), var(--shadow-glow);
+    }
+
+    .weekly-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .weekly-issue {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-teal);
+      background: rgba(0, 212, 177, 0.1);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .weekly-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .weekly-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      margin-bottom: var(--space-3);
+      line-height: 1.4;
+    }
+
+    .weekly-highlights {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .weekly-highlights li {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      padding-left: var(--space-4);
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .weekly-highlights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+
+    /* ==============================
+       关于我 Section
+    ============================== */
+    .about-section {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-16);
+      align-items: start;
+    }
+
+    .about-avatar-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-6);
+    }
+
+    .avatar-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+
+    .avatar-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: var(--gradient-hero);
+      z-index: 0;
+      animation: rotate 8s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .avatar-img {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 3px solid var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .about-title-badge {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent-primary);
+      background: rgba(79, 142, 255, 0.1);
+      border: 1px solid rgba(79, 142, 255, 0.2);
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+    }
+
+    .about-social {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+    }
+
+    .social-link:hover {
+      color: var(--accent-primary);
+      border-color: var(--border-hover);
+      background: rgba(79, 142, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .about-content {}
+
+    .about-bio {
+      font-size: 1.0625rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: var(--space-8);
+    }
+
+    .about-bio strong { color: var(--text-primary); }
+
+    .skills-section {}
+
+    .skills-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-4);
+      font-family: var(--font-mono);
+    }
+
+    .skills-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-bottom: var(--space-8);
+    }
+
+    .skill-item {}
+
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-2);
+    }
+
+    .skill-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .skill-level {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .skill-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .skill-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--gradient-hero);
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .current-learning {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .learning-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .learning-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-teal);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .learning-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .learning-items {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .learning-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .learning-name {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .learning-progress {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--accent-primary);
+    }
+
+    /* ==============================
+       邮件订阅 Banner
+    ============================== */
+    .subscribe-section {
+      padding: var(--space-20) 0;
+    }
+
+    .subscribe-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-16) var(--space-12);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .subscribe-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(79, 142, 255, 0.1) 0%, transparent 70%);
+    }
+
+    .subscribe-card > * { position: relative; z-index: 1; }
+
+    .subscribe-title {
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-3);
+    }
+
+    .subscribe-desc {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-8);
+      font-size: 1.0625rem;
+    }
+
+    .subscribe-form {
+      display: flex;
+      gap: var(--space-3);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .subscribe-input {
+      flex: 1;
+      padding: var(--space-3) var(--space-4);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+      font-family: var(--font-primary);
+      transition: all var(--transition-fast);
+    }
+
+    .subscribe-input::placeholder { color: var(--text-muted); }
+
+    .subscribe-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: rgba(79, 142, 255, 0.06);
+      box-shadow: 0 0 0 3px rgba(79, 142, 255, 0.1);
+    }
+
+    /* ==============================
+       Footer
+    ============================== */
+    .footer {
+      border-top: 1px solid var(--border-default);
+      padding: var(--space-16) 0 var(--space-8);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-8);
+      margin-bottom: var(--space-12);
+    }
+
+    .footer-brand {}
+
+    .footer-brand .nav-logo {
+      margin-bottom: var(--space-4);
+    }
+
+    .footer-tagline {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: var(--space-6);
+    }
+
+    .footer-col-title {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: var(--space-4);
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .footer-links a {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      transition: color var(--transition-fast);
+    }
+
+    .footer-links a:hover { color: var(--text-primary); }
+
+    .footer-bottom {
+      padding-top: var(--space-8);
+      border-top: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+
+    .footer-copy {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      animation: pulse 2s infinite;
+    }
+
+    /* ==============================
+       动画
+    ============================== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ==============================
+       分割线装饰
+    ============================== */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+    }
+
+    /* ==============================
+       滚动条样式
+    ============================== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-hover);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+    /* ==============================
+       响应式
+    ============================== */
+    @media (max-width: 1024px) {
+      .hero-deco { display: none; }
+      .knowledge-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-toggle { display: flex; }
+      .posts-grid { grid-template-columns: 1fr; }
+      .post-card-featured { grid-column: span 1; grid-template-columns: 1fr; }
+      .post-card-featured .post-card-cover { min-height: 160px; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; gap: var(--space-8); }
+      .weekly-list { grid-template-columns: 1fr; }
+      .subscribe-form { flex-direction: column; }
+      .hero-stats { gap: var(--space-6); }
+      .nav-cta .btn-primary { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .review-item { grid-template-columns: auto 1fr; }
+      .review-score { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-inner { padding: 0 var(--space-4); }
+      .container { padding: 0 var(--space-4); }
+      .hero-inner { padding: var(--space-12) var(--space-4) var(--space-12); }
+      .hero-stats { flex-wrap: wrap; gap: var(--space-6); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==============================
+       导航栏
+  ============================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-icon">AI</div>
+        <span class="nav-logo-text">NeuralLog</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#notes" class="active">实战手记</a></li>
+        <li><a href="#projects">项目作品</a></li>
+        <li><a href="#reviews">深度评测</a></li>
+        <li><a href="#knowledge">AI知识库</a></li>
+        <li><a href="#weekly">行业周报</a></li>
+        <li><a href="#about">关于我</a></li>
+      </ul>
+
+      <div class="nav-cta">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('subscribe').scrollIntoView({behavior:'smooth'})">订阅</button>
+        <button class="btn btn-primary">
+          <span>✦</span> 联系合作
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="菜单">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==============================
+       英雄区
+  ============================== -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        正在更新 · 第 23 期行业周报已发布
+      </div>
+
+      <h1 class="hero-title">
+        用代码<br />
+        <span class="hero-title-gradient">探索 AI 边界</span>
+      </h1>
+
+      <p class="hero-desc">
+        记录 AI 实战路径、深挖模型底层逻辑、输出每周行业洞察。
+        不造概念，只讲能跑的东西。
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="document.getElementById('notes').scrollIntoView({behavior:'smooth'})">
+          <span>⚡</span> 浏览最新内容
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('projects').scrollIntoView({behavior:'smooth'})">
+          <span>⬡</span> 查看项目作品
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-value">48</span>
+          <span class="stat-label">篇实战文章</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">12</span>
+          <span class="stat-label">个开源项目</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">23</span>
+          <span class="stat-label">期行业周报</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">3.2k</span>
+          <span class="stat-label">订阅读者</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧装饰卡片 -->
+    <div class="hero-deco">
+      <div class="deco-card">
+        <div class="deco-card-header">
+          <div class="deco-icon" style="background:rgba(79,142,255,0.15);">🤖</div>
+          <div>
+            <div class="deco-card-title">GPT-4o 评测</div>
+            <div class="deco-card-sub">深度评测 · 2天前</div>
+          </div>
+        </div>
+        <div class="deco-progress">
+          <div class="deco-progress-bar" style="width:88%"></div>
+        </div>
+      </div>
+
+      <div class="deco-card">
+        <div class="deco-card-header">
+          <div class="deco-icon" style="background:rgba(0,212,177,0.15);">⚙️</div>
+          <div>
+            <div class="deco-card-title">LangChain RAG 实战</div>
+            <div class="deco-card-sub">实战手记 · 4天前</div>
+          </div>
+        </div>
+        <div class="deco-progress">
+          <div class="deco-progress-bar" style="width:72%"></div>
+        </div>
+      </div>
+
+      <div class="deco-card">
+        <div class="deco-card-header">
+          <div class="deco-icon" style="background:rgba(245,158,11,0.15);">📊</div>
+          <div>
+            <div class="deco-card-title">AI 行业周报 #23</div>
+            <div class="deco-card-sub">行业周报 · 今天</div>
+          </div>
+        </div>
+        <div class="deco-progress">
+          <div class="deco-progress-bar" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       实战手记
+  ============================== -->
+  <section class="section" id="notes">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 01. recent_posts</p>
+          <h2 class="section-title">实战<span>手记</span></h2>
+          <p class="section-desc">真实项目踩坑记录、学习路径复盘、方法论总结。每一篇都跑过代码。</p>
+        </div>
+        <a href="#" class="view-all">查看全部 →</a>
+      </div>
+
+      <div class="posts-grid reveal">
+
+        <!-- 精选文章 -->
+        <article class="post-card post-card-featured">
+          <div class="post-card-cover" style="background:linear-gradient(135deg,#1a2235,#0f1a3d);">
+            <span>🧠</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-meta">
+              <span class="tag tag-blue">精选</span>
+              <span class="tag tag-purple">RAG</span>
+              <span class="post-date">2026-04-08</span>
+            </div>
+            <h3 class="post-title">从零搭建企业级 RAG 系统：架构设计与踩坑全记录</h3>
+            <p class="post-excerpt">历时两个月，在生产环境落地了一套完整的检索增强生成系统。本文记录了向量数据库选型、Chunk 切割策略、Reranker 调优等关键决策，以及遇到的 10+ 个坑。</p>
+            <div class="post-footer">
+              <span class="post-reading">⏱ 18 min read · 3.2k 阅读</span>
+              <div class="post-arrow">→</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 普通文章 -->
+        <article class="post-card">
+          <div class="post-card-cover" style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+            <span>🔧</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-meta">
+              <span class="tag tag-teal">实战</span>
+              <span class="post-date">2026-04-05</span>
+            </div>
+            <h3 class="post-title">LoRA 微调 Qwen2.5：从数据准备到部署的完整流程</h3>
+            <p class="post-excerpt">详细记录了使用 LoRA 对 Qwen2.5-7B 进行指令微调的全流程，包括数据清洗、训练参数选择和量化部署。</p>
+            <div class="post-footer">
+              <span class="post-reading">⏱ 12 min · 1.8k 阅读</span>
+              <div class="post-arrow">→</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card">
+          <div class="post-card-cover" style="background:linear-gradient(135deg,#1a2a1a,#0d1f0d);">
+            <span>🌲</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-meta">
+              <span class="tag tag-amber">踩坑</span>
+              <span class="post-date">2026-04-02</span>
+            </div>
+            <h3 class="post-title">Prompt Engineering 的 7 个常见误区（附案例）</h3>
+            <p class="post-excerpt">整理了过去半年在项目中反复踩到的 Prompt 问题，每个都配有反例和修正版本的对比。</p>
+            <div class="post-footer">
+              <span class="post-reading">⏱ 8 min · 2.1k 阅读</span>
+              <div class="post-arrow">→</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card">
+          <div class="post-card-cover" style="background:linear-gradient(135deg,#1a1225,#160d2a);">
+            <span>🔮</span>
+          </div>
+          <div class="post-card-body">
+            <div class="post-meta">
+              <span class="tag tag-purple">Agent</span>
+              <span class="post-date">2026-03-28</span>
+            </div>
+            <h3 class="post-title">LangGraph 多 Agent 协作实战：搭一个自动化研究助手</h3>
+            <p class="post-excerpt">用 LangGraph 实现了一个多 Agent 协同的调研系统，能自动搜索、阅读、总结并生成报告。</p>
+            <div class="post-footer">
+              <span class="post-reading">⏱ 15 min · 1.5k 阅读</span>
+              <div class="post-arrow">→</div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       项目作品
+  ============================== -->
+  <section class="section" id="projects">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 02. open_source</p>
+          <h2 class="section-title">项目<span>作品</span></h2>
+          <p class="section-desc">开源工具与在线 Demo，均可直接访问或 Fork 使用。</p>
+        </div>
+        <a href="#" class="view-all">GitHub →</a>
+      </div>
+
+      <div class="projects-grid reveal">
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-icon" style="background:rgba(79,142,255,0.12);">🤖</div>
+            <div class="project-links">
+              <a href="#" class="project-link" title="GitHub">⎇</a>
+              <a href="#" class="project-link" title="Demo">↗</a>
+            </div>
+          </div>
+          <h3 class="project-name">AutoRAG Toolkit</h3>
+          <p class="project-desc">一站式 RAG 评估与优化工具包，支持多种向量数据库和 Embedding 模型，内置 Benchmark 数据集，可视化评分面板。</p>
+          <div class="tech-stack">
+            <span class="tech-chip">Python</span>
+            <span class="tech-chip">LangChain</span>
+            <span class="tech-chip">FastAPI</span>
+            <span class="tech-chip">Qdrant</span>
+            <span class="tech-chip">React</span>
+          </div>
+          <div class="project-stats">
+            <span class="project-stat">⭐ <strong>1.2k</strong></span>
+            <span class="project-stat">🍴 <strong>234</strong></span>
+            <span class="project-stat">📦 <strong>v2.3.1</strong></span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-icon" style="background:rgba(0,212,177,0.12);">📊</div>
+            <div class="project-links">
+              <a href="#" class="project-link" title="GitHub">⎇</a>
+              <a href="#" class="project-link" title="Demo">↗</a>
+            </div>
+          </div>
+          <h3 class="project-name">ModelBench</h3>
+          <p class="project-desc">LLM 性能横向对比平台，支持自定义测试集，实时运行 GPT-4o、Claude、Gemini 等主流模型，生成可分享的对比报告。</p>
+          <div class="tech-stack">
+            <span class="tech-chip">Next.js</span>
+            <span class="tech-chip">TypeScript</span>
+            <span class="tech-chip">Python</span>
+            <span class="tech-chip">Postgres</span>
+          </div>
+          <div class="project-stats">
+            <span class="project-stat">⭐ <strong>890</strong></span>
+            <span class="project-stat">🍴 <strong>156</strong></span>
+            <span class="project-stat">📦 <strong>v1.8.0</strong></span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-icon" style="background:rgba(124,92,252,0.12);">🔮</div>
+            <div class="project-links">
+              <a href="#" class="project-link" title="GitHub">⎇</a>
+              <a href="#" class="project-link" title="Demo">↗</a>
+            </div>
+          </div>
+          <h3 class="project-name">PromptLab</h3>
+          <p class="project-desc">Prompt 版本管理与 A/B 测试平台，支持 Prompt 模板化、参数注入、批量测试和效果追踪，团队协作友好。</p>
+          <div class="tech-stack">
+            <span class="tech-chip">Vue 3</span>
+            <span class="tech-chip">Go</span>
+            <span class="tech-chip">Redis</span>
+            <span class="tech-chip">Docker</span>
+          </div>
+          <div class="project-stats">
+            <span class="project-stat">⭐ <strong>654</strong></span>
+            <span class="project-stat">🍴 <strong>98</strong></span>
+            <span class="project-stat">📦 <strong>v1.2.0</strong></span>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-icon" style="background:rgba(245,158,11,0.12);">⚡</div>
+            <div class="project-links">
+              <a href="#" class="project-link" title="GitHub">⎇</a>
+              <a href="#" class="project-link" title="Demo">↗</a>
+            </div>
+          </div>
+          <h3 class="project-name">FineTune Hub</h3>
+          <p class="project-desc">低代码微调工具，封装了 LoRA、QLoRA、Full Fine-tuning 流程，Web UI 操作，支持一键导出 GGUF 格式部署到本地。</p>
+          <div class="tech-stack">
+            <span class="tech-chip">Python</span>
+            <span class="tech-chip">PEFT</span>
+            <span class="tech-chip">Gradio</span>
+            <span class="tech-chip">CUDA</span>
+          </div>
+          <div class="project-stats">
+            <span class="project-stat">⭐ <strong>445</strong></span>
+            <span class="project-stat">🍴 <strong>87</strong></span>
+            <span class="project-stat">📦 <strong>v0.9.2</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       深度评测
+  ============================== -->
+  <section class="section" id="reviews">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 03. deep_reviews</p>
+          <h2 class="section-title">深度<span>评测</span></h2>
+          <p class="section-desc">模型、框架、工具的横向对比，用真实 Benchmark 说话，不做软文。</p>
+        </div>
+        <a href="#" class="view-all">全部评测 →</a>
+      </div>
+
+      <div class="reviews-list reveal">
+
+        <div class="review-item">
+          <div class="review-rank top">01</div>
+          <div class="review-body">
+            <div class="post-meta" style="margin-bottom:var(--space-2)">
+              <span class="tag tag-blue">LLM 对比</span>
+              <span class="tag tag-amber">HOT</span>
+              <span class="post-date">2026-04-06</span>
+            </div>
+            <div class="review-title">2026 Q2 主流 LLM 综合对比：GPT-4o vs Claude 3.5 vs Gemini 1.5 Pro vs Qwen2.5</div>
+            <div class="review-desc">涵盖代码生成、逻辑推理、中文指令跟随、长文本理解、价格效费比 5 个维度，测试用例 120+，并附完整数据表格。</div>
+          </div>
+          <div class="review-score">
+            <div class="score-value">9.4</div>
+            <div class="score-label">综合评分</div>
+          </div>
+        </div>
+
+        <div class="review-item">
+          <div class="review-rank top">02</div>
+          <div class="review-body">
+            <div class="post-meta" style="margin-bottom:var(--space-2)">
+              <span class="tag tag-purple">框架对比</span>
+              <span class="post-date">2026-03-22</span>
+            </div>
+            <div class="review-title">LangChain vs LlamaIndex vs AutoGen：2026 年 RAG/Agent 框架选型指南</div>
+            <div class="review-desc">从学习曲线、生态完整度、性能、维护活跃度 4 个维度深度对比，给出不同场景下的选型建议。</div>
+          </div>
+          <div class="review-score">
+            <div class="score-value">8.8</div>
+            <div class="score-label">综合评分</div>
+          </div>
+        </div>
+
+        <div class="review-item">
+          <div class="review-rank">03</div>
+          <div class="review-body">
+            <div class="post-meta" style="margin-bottom:var(--space-2)">
+              <span class="tag tag-teal">向量数据库</span>
+              <span class="post-date">2026-03-10</span>
+            </div>
+            <div class="review-title">向量数据库横评：Qdrant / Weaviate / Milvus / Chroma 生产环境实测</div>
+            <div class="review-desc">在 1M、10M、100M 向量规模下测试查询延迟、准确率、资源消耗，并给出不同量级场景的推荐方案。</div>
+          </div>
+          <div class="review-score">
+            <div class="score-value">8.5</div>
+            <div class="score-label">综合评分</div>
+          </div>
+        </div>
+
+        <div class="review-item">
+          <div class="review-rank">04</div>
+          <div class="review-body">
+            <div class="post-meta" style="margin-bottom:var(--space-2)">
+              <span class="tag tag-rose">推理框架</span>
+              <span class="post-date">2026-02-28</span>
+            </div>
+            <div class="review-title">本地部署实测：vLLM vs Ollama vs llama.cpp 推理性能深度对比</div>
+            <div class="review-desc">在 RTX 4090 和 M3 Max 两种硬件上对比 Throughput、TTFT、内存占用，给出最优部署方案。</div>
+          </div>
+          <div class="review-score">
+            <div class="score-value">8.2</div>
+            <div class="score-label">综合评分</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       AI 知识库
+  ============================== -->
+  <section class="section" id="knowledge">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 04. knowledge_base</p>
+          <h2 class="section-title">AI <span>知识库</span></h2>
+          <p class="section-desc">术语速查、概念拆解、思维模型，持续整理中。</p>
+        </div>
+        <a href="#" class="view-all">进入知识库 →</a>
+      </div>
+
+      <div class="knowledge-grid reveal">
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(79,142,255,0.12);">📖</div>
+          <div class="knowledge-name">核心术语</div>
+          <div class="knowledge-desc">Transformer、Attention、RLHF、KV Cache... 每个词都讲清楚原理</div>
+          <div class="knowledge-count">86 个词条</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(0,212,177,0.12);">🗺️</div>
+          <div class="knowledge-name">学习路径</div>
+          <div class="knowledge-desc">从零入门、转型指南、进阶路线，分角色的 Roadmap</div>
+          <div class="knowledge-count">12 条路径</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(124,92,252,0.12);">🧩</div>
+          <div class="knowledge-name">思维模型</div>
+          <div class="knowledge-desc">理解 AI 的思考框架，包含第一性原理、缩放定律等核心模型</div>
+          <div class="knowledge-count">24 个模型</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(245,158,11,0.12);">📋</div>
+          <div class="knowledge-name">入门教程</div>
+          <div class="knowledge-desc">跟着做就能跑起来的动手教程，从 API 调用到本地部署</div>
+          <div class="knowledge-count">38 篇教程</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(244,63,94,0.12);">⚡</div>
+          <div class="knowledge-name">Prompt 技巧</div>
+          <div class="knowledge-desc">经过验证的 Prompt 模式库，覆盖写作、代码、分析等场景</div>
+          <div class="knowledge-count">67 个模板</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(0,212,177,0.12);">🔬</div>
+          <div class="knowledge-name">论文精读</div>
+          <div class="knowledge-desc">精选重要论文，用工程师视角解读，配代码复现链接</div>
+          <div class="knowledge-count">31 篇精读</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(79,142,255,0.12);">🛠️</div>
+          <div class="knowledge-name">工具清单</div>
+          <div class="knowledge-desc">精选 AI 开发工具合集，附使用评分和对比说明</div>
+          <div class="knowledge-count">120+ 工具</div>
+        </div>
+
+        <div class="knowledge-card">
+          <div class="knowledge-icon" style="background:rgba(124,92,252,0.12);">💡</div>
+          <div class="knowledge-name">案例库</div>
+          <div class="knowledge-desc">真实产品和项目的 AI 集成案例，含架构图和关键决策</div>
+          <div class="knowledge-count">45 个案例</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       行业周报
+  ============================== -->
+  <section class="section" id="weekly">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 05. weekly_digest</p>
+          <h2 class="section-title">行业<span>周报</span></h2>
+          <p class="section-desc">每周五更新，精选 AI 行业动态、值得读的论文和实用工具推荐。</p>
+        </div>
+        <a href="#" class="view-all">往期周报 →</a>
+      </div>
+
+      <div class="weekly-list reveal">
+
+        <div class="weekly-card">
+          <div class="weekly-header">
+            <span class="weekly-issue">Vol. #23</span>
+            <span class="weekly-date">2026-04-10</span>
+          </div>
+          <h3 class="weekly-title">GPT-4.5 内测反馈、Cursor 新功能、一篇改变我对 CoT 看法的论文</h3>
+          <ul class="weekly-highlights">
+            <li>GPT-4.5 在代码生成上的真实体验与踩坑</li>
+            <li>Cursor 0.45 更新：多文件上下文终于能用了</li>
+            <li>论文：《Chain of Thought 的边界》关键结论梳理</li>
+            <li>本周神器：AI 辅助 SQL 生成工具 TextSQL 2.0</li>
+            <li>行业观察：Agent 是下一个泡沫吗？</li>
+          </ul>
+        </div>
+
+        <div class="weekly-card">
+          <div class="weekly-header">
+            <span class="weekly-issue">Vol. #22</span>
+            <span class="weekly-date">2026-04-03</span>
+          </div>
+          <h3 class="weekly-title">Gemini 2.0 发布首周观察、本地模型性能大跃进、开源周精选</h3>
+          <ul class="weekly-highlights">
+            <li>Gemini 2.0 对比测试：哪些场景真的更好？</li>
+            <li>Llama 3.3 本地跑分：Mac Studio M3 Ultra 实测</li>
+            <li>开源周报：5 个值得 Star 的 AI 项目</li>
+            <li>工具推荐：Obsidian + AI 插件打造个人知识库</li>
+            <li>思考：为什么 RAG 这么难做好</li>
+          </ul>
+        </div>
+
+        <div class="weekly-card">
+          <div class="weekly-header">
+            <span class="weekly-issue">Vol. #21</span>
+            <span class="weekly-date">2026-03-27</span>
+          </div>
+          <h3 class="weekly-title">微调还是 RAG？一道经典选择题的 2026 年新答案</h3>
+          <ul class="weekly-highlights">
+            <li>微调 vs RAG 最新对比研究汇总</li>
+            <li>Anthropic 发布 Claude 工具使用新文档解读</li>
+            <li>生产实践：向量数据库的冷热数据分层方案</li>
+            <li>开源精选：LightRAG 深度体验报告</li>
+            <li>数据：主流 AI Coding 工具月活统计</li>
+          </ul>
+        </div>
+
+        <div class="weekly-card">
+          <div class="weekly-header">
+            <span class="weekly-issue">Vol. #20</span>
+            <span class="weekly-date">2026-03-20</span>
+          </div>
+          <h3 class="weekly-title">里程碑期：回顾过去 20 期，AI 行业发生了什么</h3>
+          <ul class="weekly-highlights">
+            <li>20 期周报年度热词 Top 20</li>
+            <li>过去半年变化最大的 5 个方向</li>
+            <li>读者投票：最受欢迎的工具推荐 Top 10</li>
+            <li>播客推荐：最近 3 期值得一听的 AI 节目</li>
+            <li>下半年 AI 趋势预测</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ==============================
+       关于我
+  ============================== -->
+  <section class="section about-section" id="about">
+    <div class="container">
+      <div class="section-header reveal">
+        <div>
+          <p class="section-label">// 06. about_me</p>
+          <h2 class="section-title">关于<span>我</span></h2>
+        </div>
+      </div>
+
+      <div class="about-grid">
+
+        <div class="about-avatar-area reveal">
+          <div class="avatar-ring">
+            <div class="avatar-img">🧑‍💻</div>
+          </div>
+          <div class="about-name">Alex · 一只探索AI的工程师</div>
+          <div class="about-title-badge">AI Engineer · Content Creator</div>
+          <div class="about-social">
+            <a href="#" class="social-link" title="GitHub" aria-label="GitHub">⎇</a>
+            <a href="#" class="social-link" title="Twitter" aria-label="Twitter">𝕏</a>
+            <a href="#" class="social-link" title="LinkedIn" aria-label="LinkedIn">in</a>
+            <a href="#" class="social-link" title="Email" aria-label="Email">✉</a>
+            <a href="#" class="social-link" title="RSS" aria-label="RSS">◉</a>
+          </div>
+        </div>
+
+        <div class="about-content reveal">
+          <p class="about-bio">
+            <strong>做过 5 年后端，2022 年开始系统学习 AI</strong>。现在主要在做 LLM 应用落地和 AI 工程化的工作。<br /><br />
+            这个站点是我的<strong>公开学习笔记</strong>——把自己踩过的坑、验证过的方法、读过的论文都写下来。一方面是给自己整理，另一方面希望对同在路上的人有一点帮助。<br /><br />
+            不造概念，只写我<strong>实际跑过、用过、验证过</strong>的东西。
+          </p>
+
+          <div class="skills-section">
+            <div class="skills-title">技术栈</div>
+            <div class="skills-list">
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">LLM 应用开发</span>
+                  <span class="skill-level">专精</span>
+                </div>
+                <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+              </div>
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">Python / PyTorch</span>
+                  <span class="skill-level">熟练</span>
+                </div>
+                <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+              </div>
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">RAG / 向量检索</span>
+                  <span class="skill-level">专精</span>
+                </div>
+                <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+              </div>
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">模型微调（LoRA/QLoRA）</span>
+                  <span class="skill-level">熟练</span>
+                </div>
+                <div class="skill-bar"><div class="skill-fill" style="width:76%"></div></div>
+              </div>
+              <div class="skill-item">
+                <div class="skill-header">
+                  <span class="skill-name">Agent / 多模型编排</span>
+                  <span class="skill-level">进阶中</span>
+                </div>
+                <div class="skill-bar"><div class="skill-fill" style="width:65%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="current-learning">
+            <div class="learning-header">
+              <div class="learning-dot"></div>
+              <div class="learning-title">⚡ 正在研究</div>
+            </div>
+            <div class="learning-items">
+              <div class="learning-item">
+                <span class="learning-name">Mixture of Experts 架构</span>
+                <span class="learning-progress">进行中 · 60%</span>
+              </div>
+              <div class="learning-item">
+                <span class="learning-name">GraphRAG 生产实践</span>
+                <span class="learning-progress">进行中 · 75%</span>
+              </div>
+              <div class="learning-item">
+                <span class="learning-name">多模态 LLM 应用开发</span>
+                <span class="learning-progress">刚开始 · 20%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       订阅 Banner
+  ============================== -->
+  <section class="subscribe-section" id="subscribe">
+    <div class="container">
+      <div class="subscribe-card reveal">
+        <div class="hero-badge" style="margin:0 auto var(--space-6)">
+          <span class="hero-badge-dot"></span>
+          每周五更新 · 3200+ 人已订阅
+        </div>
+        <h2 class="subscribe-title">订阅行业周报 <span style="background:var(--gradient-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">不错过重要动态</span></h2>
+        <p class="subscribe-desc">每周一封，精选行业动态 + 工具推荐 + 我的一点思考。可随时退订。</p>
+        <form class="subscribe-form" onsubmit="handleSubscribe(event)">
+          <input type="email" class="subscribe-input" placeholder="your@email.com" required aria-label="邮箱地址" />
+          <button type="submit" class="btn btn-primary">订阅 →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       Footer
+  ============================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo" style="margin-bottom:var(--space-4)">
+            <div class="nav-logo-icon">AI</div>
+            <span class="nav-logo-text">NeuralLog</span>
+          </div>
+          <p class="footer-tagline">记录 AI 实战路径、深挖模型底层逻辑、输出每周行业洞察。不造概念，只讲能跑的东西。</p>
+          <div class="about-social">
+            <a href="#" class="social-link" title="GitHub" aria-label="GitHub">⎇</a>
+            <a href="#" class="social-link" title="Twitter" aria-label="Twitter">𝕏</a>
+            <a href="#" class="social-link" title="Email" aria-label="Email">✉</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">内容</div>
+          <ul class="footer-links">
+            <li><a href="#notes">实战手记</a></li>
+            <li><a href="#projects">项目作品</a></li>
+            <li><a href="#reviews">深度评测</a></li>
+            <li><a href="#knowledge">AI 知识库</a></li>
+            <li><a href="#weekly">行业周报</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">工具</div>
+          <ul class="footer-links">
+            <li><a href="#">Prompt 模板库</a></li>
+            <li><a href="#">模型对比工具</a></li>
+            <li><a href="#">学习路径图</a></li>
+            <li><a href="#">论文精读列表</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">关于</div>
+          <ul class="footer-links">
+            <li><a href="#about">关于我</a></li>
+            <li><a href="#">RSS 订阅</a></li>
+            <li><a href="#">合作咨询</a></li>
+            <li><a href="#">隐私政策</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 NeuralLog · 内容采用 CC BY-NC 4.0 协议</span>
+        <div class="footer-status">
+          <span class="status-dot"></span>
+          All systems normal · 上次更新 2026-04-10
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==============================
+       JavaScript
+  ============================== -->
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }, { passive: true });
+
+    // 导航高亮
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    const observerOptions = {
+      rootMargin: '-30% 0px -60% 0px'
+    };
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => link.classList.remove('active'));
+          const activeLink = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+          if (activeLink) activeLink.classList.add('active');
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(section => sectionObserver.observe(section));
+
+    // Reveal on scroll 动画
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, i * 60);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // 订阅表单
+    function handleSubscribe(e) {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const btn = e.target.querySelector('button');
+      btn.textContent = '✓ 订阅成功！';
+      btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      input.value = '';
+      setTimeout(() => {
+        btn.textContent = '订阅 →';
+        btn.style.background = '';
+      }, 3000);
+    }
+
+    // 移动端菜单
+    const navToggle = document.getElementById('navToggle');
+    const navLinksList = document.querySelector('.nav-links');
+    navToggle.addEventListener('click', () => {
+      const isOpen = navLinksList.style.display === 'flex';
+      navLinksList.style.cssText = isOpen ? '' :
+        'display:flex;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:rgba(10,14,26,0.97);backdrop-filter:blur(20px);padding:1rem;border-bottom:1px solid rgba(79,142,255,0.1);z-index:999;gap:0.25rem;';
+    });
+
+    // 技能条动画
+    const skillObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.skill-fill').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            requestAnimationFrame(() => {
+              setTimeout(() => { bar.style.width = width; }, 100);
+            });
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.skills-list').forEach(el => skillObserver.observe(el));
+  </script>
+
+</body>
+</html>

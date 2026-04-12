@@ -1,0 +1,162 @@
+{
+  "siteProfile": {
+    "siteName": "AI探索站",
+    "tagline": "分享 AI 学习历程，整理 AI 资讯，持续发布项目实验。",
+    "heroTitle": "把个人 AI 网站做成一个持续成长的知识与项目入口。",
+    "heroIntro": "这里会长期记录我学习 AI 的过程、筛选行业动态、整理方法论，并持续沉淀自己的项目实验档案。",
+    "contactEmail": "hello@maple-ai.local",
+    "updatedAt": "2026-04-11T00:00:00.000Z"
+  },
+  "taxonomy": {
+    "insightCategories": [
+      "行业动态",
+      "方法观察",
+      "工具更新",
+      "站务公告"
+    ],
+    "projectTags": [
+      "Vue 3",
+      "Vite",
+      "Hash Routing",
+      "Content Modeling",
+      "Curation Workflow"
+    ],
+    "updatedAt": "2026-04-11T00:00:00.000Z"
+  },
+  "journeyStages": [
+    {
+      "id": "st-1",
+      "name": "初识AI",
+      "sortOrder": 0
+    },
+    {
+      "id": "st-2",
+      "name": "AI学习",
+      "sortOrder": 1
+    },
+    {
+      "id": "st-1775921344219",
+      "name": "AI实战",
+      "sortOrder": 2
+    }
+  ],
+  "journey": [
+    {
+      "id": "journe-1775921446106",
+      "updatedAt": "2026-04-11T15:31:42.194Z",
+      "stage": "AI实战",
+      "stageId": "st-1775921344219",
+      "title": "测试",
+      "summary": "123",
+      "body": "123",
+      "coverImage": "",
+      "pinned": false,
+      "sortOrder": 3,
+      "status": "published"
+    },
+    {
+      "id": "journey-1",
+      "stage": "初识AI",
+      "title": "建立 AI 基础认知",
+      "summary": "从模型概念、Prompt 基础和主流产品体验切入，先形成自己的知识框架。",
+      "body": "这一阶段的重点不是急着追模型热点，而是先把常见术语、典型产品能力和使用边界理清。\n\n我把学习拆成三个部分：\n1. 认识大模型、向量检索、Agent 等基础概念。\n2. 用几个成熟产品亲自体验输入、输出和效果差异。\n3. 把感受写成笔记，形成自己的判断标准。\n\n这样做的好处是，后续无论看资讯还是做项目，都不会只是跟着热度跑。",
+      "coverImage": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
+      "pinned": true,
+      "sortOrder": 1,
+      "status": "published",
+      "updatedAt": "2026-04-11T00:00:00.000Z",
+      "stageId": "st-1"
+    },
+    {
+      "id": "journey-2",
+      "stage": "AI学习",
+      "title": "进入工作流和工具实践",
+      "summary": "开始围绕真实场景理解自动化、协作和内容生产中的 AI 用法。",
+      "body": "进入第二阶段后，我不再只看模型本身，而是开始关注它在具体工作流里如何落地。\n\n我重点做了这些尝试：\n1. 让 AI 参与资料整理和内容初稿生成。\n2. 用固定提示词模板提高输出稳定性。\n3. 把实践结果整理成可复用的方法，而不是一次性试验。\n\n这一阶段的收获是，AI 的价值往往不在单次回答，而在它是否能嵌入长期重复的工作流程。",
+      "coverImage": "https://images.unsplash.com/photo-1676299081847-824916de030a?auto=format&fit=crop&w=1200&q=80",
+      "pinned": false,
+      "sortOrder": 2,
+      "status": "published",
+      "updatedAt": "2026-04-11T00:00:00.000Z",
+      "stageId": "st-2"
+    }
+  ],
+  "insights": [
+    {
+      "id": "insight-1775884104933",
+      "updatedAt": "2026-04-11T14:57:02.404Z",
+      "category": "站务公告",
+      "title": "",
+      "summary": "",
+      "body": "",
+      "coverImage": "",
+      "pinned": false,
+      "sortOrder": 99,
+      "publishedAt": "2026-04-11",
+      "status": "published"
+    },
+    {
+      "id": "insight-1",
+      "category": "行业动态",
+      "title": "哪些 AI 信息值得收集，哪些只会制造焦虑",
+      "summary": "把看似热闹的资讯转化成真正影响学习和项目判断的信号。",
+      "body": "不是所有 AI 资讯都值得投入注意力。\n\n我现在更关注三类信息：\n1. 会影响工具选择或架构方案的更新。\n2. 能改变学习路径或项目优先级的方法变化。\n3. 经过多个来源验证、真正有落地价值的趋势。\n\n相反，那些只有情绪张力、没有方法启发的内容，只会制造焦虑。做个人站点时，更重要的是把信息转成自己的判断资产。",
+      "coverImage": "https://images.unsplash.com/photo-1674027444485-cec3da58eef4?auto=format&fit=crop&w=1200&q=80",
+      "pinned": true,
+      "sortOrder": 1,
+      "publishedAt": "2026-04-11",
+      "status": "published",
+      "updatedAt": "2026-04-11T00:00:00.000Z"
+    },
+    {
+      "id": "insight-2",
+      "updatedAt": "2026-04-11T14:57:01.737Z",
+      "category": "方法观察",
+      "title": "为什么 AI 资讯整理应该服务项目，而不是服务刷屏",
+      "summary": "资讯不是终点，它应该回流到选题、决策和后续实验设计。",
+      "body": "做资讯整理时，我越来越明确一件事：资讯本身不是成果，能否回流到项目才是关键。\n\n如果一条信息不能帮助我做出更清晰的选题判断，不能让我优化内容结构、实验路径或产品方向，它的价值就很有限。\n\n所以我现在会把看到的更新重新归类成：可行动、可观察、可忽略。这样整理后，资讯就不再只是浏览记录，而是项目推进的输入。",
+      "coverImage": "",
+      "pinned": false,
+      "sortOrder": 2,
+      "publishedAt": "2026-04-10",
+      "status": "published"
+    }
+  ],
+  "projects": [
+    {
+      "id": "project-1",
+      "title": "AI 项目首页重构实验",
+      "summary": "从单页展示改成多路由个人 AI 网站，让内容结构更符合用户心智。",
+      "body": "这个项目的目标，是把原先偏展示型的 AI 页面重构成真正围绕内容组织的网站。\n\n我这次重点做了几件事：\n1. 把前台拆成首页、学习、资讯、项目几个清晰入口。\n2. 让后台直接维护真实内容，而不是静态占位页面。\n3. 用统一接口把前台、后台、后端串起来。\n\n项目最有价值的部分不是视觉变化，而是内容结构终于能长期维护。",
+      "coverImage": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+      "pinned": true,
+      "sortOrder": 1,
+      "status": "published",
+      "stack": [
+        "Vue 3",
+        "Vite",
+        "Hash Routing"
+      ],
+      "sourceUrl": "",
+      "githubUrl": "",
+      "updatedAt": "2026-04-11T00:00:00.000Z"
+    },
+    {
+      "id": "project-2",
+      "title": "AI 资讯整理系统",
+      "summary": "把日常看到的更新、工具和趋势整理成可检索、可归类的站点内容。",
+      "body": "这个项目还在规划中，核心目标是把零散的 AI 信息整理成长期可维护的内容库。\n\n预期会包含：\n1. 分类归档与筛选能力。\n2. 从资讯到项目选题的映射关系。\n3. 后台可维护的内容结构，而不是临时记录。\n\n后续会围绕内容质量和检索效率继续推进。",
+      "coverImage": "",
+      "pinned": false,
+      "sortOrder": 2,
+      "status": "planned",
+      "stack": [
+        "Content Modeling",
+        "Curation Workflow"
+      ],
+      "sourceUrl": "",
+      "githubUrl": "",
+      "updatedAt": "2026-04-11T00:00:00.000Z"
+    }
+  ]
+}

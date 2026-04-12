@@ -1,126 +1,182 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 
-import HomeWelcomeHero from '@/components/home/HomeWelcomeHero.vue';
-import { getPostsByCategory } from '@/services/posts';
-import { getProfile } from '@/services/profile';
+import HomeNovaHero from '@/components/home/HomeNovaHero.vue';
+import { getGoodSites } from '@/services/goodSites';
+import { getAllPublishedPosts, type PostItem } from '@/services/posts';
+import type { ProjectItem } from '@/services/projects';
 import { getProjects } from '@/services/projects';
+import { getProfile } from '@/services/profile';
 
-const techPosts = ref<Awaited<ReturnType<typeof getPostsByCategory>>>([]);
-const reviewPosts = ref<Awaited<ReturnType<typeof getPostsByCategory>>>([]);
-const projects = ref<Awaited<ReturnType<typeof getProjects>>>([]);
+const router = useRouter();
+const allPosts = ref<PostItem[]>([]);
+const projects = ref<ProjectItem[]>([]);
+const goodSitesCount = ref(0);
 const profile = ref<Awaited<ReturnType<typeof getProfile>>>(null);
 
-const latestTechPosts = computed(() => techPosts.value.slice(0, 3));
-const latestReviewPosts = computed(() => reviewPosts.value.slice(0, 2));
-const featuredProjects = computed(() => projects.value.slice(0, 3));
+const articleTotal = computed(() => allPosts.value.length);
+const projectTotal = computed(() => projects.value.length);
+
+const heroLine1 = computed(() =>
+  profile.value?.name?.trim() ? `你好，我是 ${profile.value.name.trim()}` : '欢迎来到',
+);
+
+const heroIntro = computed(
+  () =>
+    profile.value?.intro?.trim() ||
+    '探索学习与工程实践，记录代码与想法。这里是枫叶的个人空间——文章与项目。',
+);
+
+const heroBadge = computed(() => {
+  const t = profile.value?.tagline?.trim();
+  return t && t.length > 0 ? t : undefined;
+});
+
+const recentPosts = computed(() =>
+  [...allPosts.value].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4),
+);
+
+const estReadMinutes = (post: PostItem) => Math.max(1, Math.ceil((post.content?.length ?? 0) / 1200));
+
+const postMiniTag = (post: PostItem) => post.tags[0]?.trim() || '文章';
+
+const goPost = (slug: string) => {
+  void router.push({ name: 'post-detail', params: { slug } });
+};
+
+const reducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const animateValue = (
+  from: number,
+  to: number,
+  setter: (v: number) => void,
+  durationMs: number,
+) => {
+  if (reducedMotion() || from === to) {
+    setter(to);
+    return;
+  }
+  const start = performance.now();
+  const delta = to - from;
+  const tick = (now: number) => {
+    const t = Math.min(1, (now - start) / durationMs);
+    const eased = 1 - (1 - t) * (1 - t);
+    setter(Math.round(from + delta * eased));
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+};
+
+const statArticles = ref(0);
+const statProjects = ref(0);
+const statSites = ref(0);
+
+const runBigStatAnim = () => {
+  const a = articleTotal.value;
+  const p = projectTotal.value;
+  const s = goodSitesCount.value;
+  if (reducedMotion()) {
+    statArticles.value = a;
+    statProjects.value = p;
+    statSites.value = s;
+    return;
+  }
+  statArticles.value = 0;
+  statProjects.value = 0;
+  statSites.value = 0;
+  const d = 900;
+  animateValue(0, a, (v) => {
+    statArticles.value = v;
+  }, d);
+  animateValue(0, p, (v) => {
+    statProjects.value = v;
+  }, d);
+  animateValue(0, s, (v) => {
+    statSites.value = v;
+  }, d);
+};
 
 onMounted(async () => {
-  const [tech, review, projectList, profileInfo] = await Promise.all([
-    getPostsByCategory('tech'),
-    getPostsByCategory('review'),
+  const [posts, projectList, sitesData, profileInfo] = await Promise.all([
+    getAllPublishedPosts(),
     getProjects(),
+    getGoodSites(),
     getProfile(),
   ]);
-  techPosts.value = tech;
-  reviewPosts.value = review;
+  allPosts.value = posts;
   projects.value = projectList;
+  goodSitesCount.value = sitesData.items.length;
   profile.value = profileInfo;
+  runBigStatAnim();
 });
 </script>
 
 <template>
-  <section class="grid gap-6">
-    <a-card class="home-section-card overflow-hidden" :body-style="{ padding: 0 }">
-      <HomeWelcomeHero />
-      <div
-        class="home-hero-body px-5 py-6 md:px-6 md:py-7 dark:border-t dark:border-slate-700 dark:!bg-gradient-to-b dark:!from-slate-900/95 dark:!to-gray-900"
+  <section class="nova-home-page">
+    <HomeNovaHero
+      :display-name="heroLine1"
+      :intro="heroIntro"
+      :article-total="articleTotal"
+      :project-total="projectTotal"
+      stars-display="—"
+      :badge-text="heroBadge"
+    >
+      <template #actions>
+        <RouterLink :to="{ name: 'posts' }" class="nova-btn-primary no-underline">✦ 开始探索</RouterLink>
+        <RouterLink :to="{ name: 'projects' }" class="nova-btn-outline no-underline">⬡ 查看项目</RouterLink>
+      </template>
+    </HomeNovaHero>
+
+    <div class="nova-home-stats-grid">
+      <div class="nova-home-stat-card">
+        <div class="nova-home-stat-icon" aria-hidden="true">📝</div>
+        <div class="nova-home-stat-num">{{ statArticles }}</div>
+        <div class="nova-home-stat-label">篇博文</div>
+      </div>
+      <div class="nova-home-stat-card">
+        <div class="nova-home-stat-icon" aria-hidden="true">🚀</div>
+        <div class="nova-home-stat-num">{{ statProjects }}</div>
+        <div class="nova-home-stat-label">个开源项目</div>
+      </div>
+      <div class="nova-home-stat-card">
+        <div class="nova-home-stat-icon" aria-hidden="true">⭐</div>
+        <div class="nova-home-stat-num nova-home-stat-num--text">—</div>
+        <div class="nova-home-stat-label">GitHub Stars</div>
+      </div>
+      <div class="nova-home-stat-card">
+        <div class="nova-home-stat-icon" aria-hidden="true">🌍</div>
+        <div class="nova-home-stat-num">{{ statSites }}</div>
+        <div class="nova-home-stat-label">条友链</div>
+      </div>
+    </div>
+
+    <header class="nova-section-header nova-home-latest-head">
+      <div class="nova-section-tag">LATEST</div>
+      <h2 class="nova-section-title">最新博文</h2>
+    </header>
+
+    <div class="nova-posts-mini-grid">
+      <article
+        v-for="post in recentPosts"
+        :key="post.slug"
+        class="nova-post-mini-card"
+        tabindex="0"
+        role="link"
+        @click="goPost(post.slug)"
+        @keydown.enter.prevent="goPost(post.slug)"
       >
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          {{ profile?.name ? `你好，我是 ${profile.name}` : '你好' }}
-        </h1>
-        <p v-if="profile?.intro" class="mt-3 text-gray-600 dark:text-gray-300">{{ profile.intro }}</p>
-        <div class="mt-5 flex flex-wrap gap-3">
-          <RouterLink :to="{ name: 'projects' }">
-            <a-button ghost>看项目展示</a-button>
-          </RouterLink>
+        <div class="nova-post-mini-tag">{{ postMiniTag(post) }}</div>
+        <h3 class="nova-post-mini-title">{{ post.title }}</h3>
+        <div class="nova-post-mini-meta">
+          <span>{{ post.date }}</span>
+          <span>· 约 {{ estReadMinutes(post) }} 分钟</span>
+          <span>· 查看文章</span>
         </div>
-      </div>
-    </a-card>
+      </article>
+    </div>
 
-    <a-card title="最新学习记录" class="home-section-card">
-      <div class="space-y-4">
-        <article
-          v-for="post in latestTechPosts"
-          :key="post.slug"
-          class="blog-card-lift rounded-lg border border-gray-200 bg-white/80 p-4 dark:border-slate-600 dark:bg-slate-800/60"
-        >
-          <div class="flex justify-between">
-            <RouterLink
-              :to="{ name: 'post-detail', params: { slug: post.slug } }"
-              class="text-lg font-semibold text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
-            >
-              {{ post.title }}
-            </RouterLink>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ post.date }}</p>
-          </div>
-          <p class="mt-2 text-gray-700 dark:text-gray-300">{{ post.summary }}</p>
-        </article>
-        <a-empty v-if="latestTechPosts.length === 0" description="暂无内容" />
-      </div>
-    </a-card>
-
-    <a-card title="最新学习笔记" class="home-section-card">
-      <div class="space-y-4">
-        <article
-          v-for="post in latestReviewPosts"
-          :key="post.slug"
-          class="blog-card-lift rounded-lg border border-gray-200 bg-white/80 p-4 dark:border-slate-600 dark:bg-slate-800/60"
-        >
-          <div class="flex justify-between">
-            <RouterLink
-              :to="{ name: 'post-detail', params: { slug: post.slug } }"
-              class="text-lg font-semibold text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
-            >
-              {{ post.title }}
-            </RouterLink>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ post.date }}</p>
-          </div>
-
-          <p class="mt-2 text-gray-700 dark:text-gray-300">{{ post.summary }}</p>
-        </article>
-        <a-empty v-if="latestReviewPosts.length === 0" description="暂无内容" />
-      </div>
-    </a-card>
-
-    <a-card title="我的项目" class="home-section-card">
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <a-card
-          v-for="project in featuredProjects"
-          :key="project.name"
-          size="small"
-          class="blog-card-lift h-full"
-        >
-          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">
-            {{ project.name }}
-          </h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">{{ project.description }}</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <a-tag v-for="tech in project.techStack" :key="tech" color="blue">
-              {{ tech }}
-            </a-tag>
-          </div>
-        </a-card>
-      </div>
-      <a-empty v-if="featuredProjects.length === 0" description="暂无内容" />
-    </a-card>
+    <a-empty v-if="recentPosts.length === 0" class="!mt-6" description="暂无博文" />
   </section>
 </template>
-
-<style scoped>
-.home-hero-body {
-  border-top: 1px solid rgba(226, 232, 240, 0.95);
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, #fff 100%);
-}
-</style>

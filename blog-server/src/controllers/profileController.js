@@ -17,18 +17,14 @@ const getProfile = async (_req, res) => {
 }
 
 const upsertProfile = async (req, res) => {
-  const { name, tagline = '', intro, focusPoints = [], email, github } = req.body
+  const { name, tagline = '', intro, focusPoints = [], email, github, siteAbout = '' } = req.body
   if (!name || !intro) return res.status(400).json({ message: '缺少必要字段' })
+  const siteAboutText = typeof siteAbout === 'string' ? siteAbout : ''
   try {
     const [rows] = await pool.query('SELECT id FROM profile LIMIT 1')
     if (rows.length === 0) {
       await pool.query(
-        'INSERT INTO profile (name, tagline, intro, focus_points, email, github) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, tagline || '', intro, JSON.stringify(toJsonArray(focusPoints)), email || '', github || ''],
-      )
-    } else {
-      await pool.query(
-        'UPDATE profile SET name = ?, tagline = ?, intro = ?, focus_points = ?, email = ?, github = ? WHERE id = ?',
+        'INSERT INTO profile (name, tagline, intro, focus_points, email, github, site_about) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           name,
           tagline || '',
@@ -36,6 +32,20 @@ const upsertProfile = async (req, res) => {
           JSON.stringify(toJsonArray(focusPoints)),
           email || '',
           github || '',
+          siteAboutText,
+        ],
+      )
+    } else {
+      await pool.query(
+        'UPDATE profile SET name = ?, tagline = ?, intro = ?, focus_points = ?, email = ?, github = ?, site_about = ? WHERE id = ?',
+        [
+          name,
+          tagline || '',
+          intro,
+          JSON.stringify(toJsonArray(focusPoints)),
+          email || '',
+          github || '',
+          siteAboutText,
           rows[0].id,
         ],
       )

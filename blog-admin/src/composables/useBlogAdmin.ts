@@ -15,14 +15,7 @@ import {
   getProjectsApi,
   updateProjectApi,
 } from '@/api/modules/projects';
-import type {
-  AboutProfile,
-  AdminGoodSite,
-  AdminPost,
-  AdminProject,
-  PostCategory,
-  PostStatus,
-} from '@/types/content';
+import type { AboutProfile, AdminGoodSite, AdminPost, AdminProject, PostStatus } from '@/types/content';
 
 const posts = ref<AdminPost[]>([]);
 const projects = ref<AdminProject[]>([]);
@@ -36,6 +29,7 @@ const about = ref<AboutProfile>({
   focusPoints: [],
   email: '',
   github: '',
+  siteAbout: '',
 });
 const initialized = ref(false);
 let pendingInit: Promise<void> | null = null;
@@ -62,7 +56,6 @@ const normalizePost = (item: unknown): AdminPost => {
     content: String(o.content ?? ''),
     tags: toStringArray(o.tags),
     date: String(o.date ?? '').slice(0, 10),
-    category: o.category === 'review' ? 'review' : 'tech',
     status: o.status === 'published' ? 'published' : 'draft',
   };
 };
@@ -101,6 +94,7 @@ const loadAll = async () => {
       focusPoints: toStringArray(p.focus_points ?? p.focusPoints),
       email: String(p.email ?? ''),
       github: String(p.github ?? ''),
+      siteAbout: String(p.site_about ?? p.siteAbout ?? ''),
     };
   }
 };
@@ -170,8 +164,6 @@ export const useBlogAdmin = () => {
     await loadAll();
   };
 
-  const postsByCategory = (category: PostCategory) =>
-    posts.value.filter((item) => item.category === category);
   const postsByStatus = (status: PostStatus) =>
     posts.value.filter((item) => item.status === status);
 
@@ -183,7 +175,6 @@ export const useBlogAdmin = () => {
     about,
     init,
     loadAll,
-    postsByCategory,
     postsByStatus,
     upsertPost,
     deletePost,

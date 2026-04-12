@@ -29,11 +29,11 @@ const createProject = async (req, res) => {
   const { name, description, url, sourceCodeUrl = '', techStack = [] } = req.body
   const normalizedUrl = normalizeHttpUrl(url)
   const normalizedSourceCodeUrl = normalizeHttpUrl(sourceCodeUrl)
-  if (!name || !description || !url) {
+  if (!name || !description) {
     return res.status(400).json({ message: '缺少必要字段' })
   }
-  if (!isHttpUrl(normalizedUrl)) {
-    return res.status(400).json({ message: '项目地址需为 http/https 链接' })
+  if (normalizedUrl && !isHttpUrl(normalizedUrl)) {
+    return res.status(400).json({ message: '体验地址需为 http/https 链接' })
   }
   if (normalizedSourceCodeUrl && !isHttpUrl(normalizedSourceCodeUrl)) {
     return res.status(400).json({ message: '源码地址需为 http/https 链接' })
@@ -54,11 +54,11 @@ const updateProject = async (req, res) => {
   const { name, description, url, sourceCodeUrl = '', techStack = [] } = req.body
   const normalizedUrl = normalizeHttpUrl(url)
   const normalizedSourceCodeUrl = normalizeHttpUrl(sourceCodeUrl)
-  if (!name || !description || !url) {
+  if (!name || !description) {
     return res.status(400).json({ message: '缺少必要字段' })
   }
-  if (!isHttpUrl(normalizedUrl)) {
-    return res.status(400).json({ message: '项目地址需为 http/https 链接' })
+  if (normalizedUrl && !isHttpUrl(normalizedUrl)) {
+    return res.status(400).json({ message: '体验地址需为 http/https 链接' })
   }
   if (normalizedSourceCodeUrl && !isHttpUrl(normalizedSourceCodeUrl)) {
     return res.status(400).json({ message: '源码地址需为 http/https 链接' })

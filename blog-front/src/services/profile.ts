@@ -7,6 +7,7 @@ export interface ProfileItem {
   focusPoints: string[];
   email: string;
   github: string;
+  siteAbout: string;
 }
 
 const toStringArray = (value: unknown): string[] => {
@@ -32,5 +33,6 @@ export const getProfile = async (): Promise<ProfileItem | null> => {
     focusPoints: toStringArray(payload.focus_points),
     email: String(payload.email ?? ''),
     github: String(payload.github ?? ''),
+    siteAbout: String(payload.site_about ?? ''),
   };
 };

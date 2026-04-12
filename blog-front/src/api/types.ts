@@ -5,7 +5,6 @@ export interface PostApiItem {
   content: string;
   tags: unknown;
   date: string;
-  category: 'tech' | 'review';
   status: 'draft' | 'published';
 }
 
@@ -16,6 +15,7 @@ export interface ProfileApiItem {
   focus_points?: unknown;
   email: string;
   github: string;
+  site_about?: string | null;
 }
 
 export interface ProjectApiItem {

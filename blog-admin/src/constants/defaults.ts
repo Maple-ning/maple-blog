@@ -8,17 +8,15 @@ export const defaultPosts: AdminPost[] = [
     content: '正文内容...',
     tags: ['Vue3', 'TypeScript'],
     date: '2026-03-24',
-    category: 'tech',
     status: 'published',
   },
   {
     id: 2,
-    title: '《深度工作》学习笔记',
+    title: '《深度工作》读书笔记',
     summary: '如何减少上下文切换，提高深度学习效率。',
     content: '正文内容...',
-    tags: ['学习笔记', '效率'],
+    tags: ['读书', '效率'],
     date: '2026-03-20',
-    category: 'review',
     status: 'draft',
   },
 ];
@@ -27,7 +25,7 @@ export const defaultProjects: AdminProject[] = [
   {
     id: 1,
     name: '枫叶小站前台',
-    description: '用于展示技术文章、学习笔记和项目卡片。',
+    description: '用于展示文章与项目卡片。',
     url: 'https://github.com/',
     sourceCodeUrl: 'https://github.com/',
     techStack: ['Vue3', 'Vite', 'Tailwind'],
@@ -38,7 +36,8 @@ export const defaultAbout: AboutProfile = {
   name: 'Ning',
   tagline: '持续学习与内容沉淀',
   intro: '前端开发者，关注 Vue 工程化与效率工具。',
-  focusPoints: ['持续发布学习记录', '迭代项目体验', '沉淀工程化实践'],
+  focusPoints: ['持续发布文章', '迭代项目体验', '沉淀工程化实践'],
   email: 'ning@example.com',
   github: 'https://github.com/',
+  siteAbout: '',
 };

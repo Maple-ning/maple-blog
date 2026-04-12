@@ -1,4 +1,3 @@
-export type PostCategory = 'tech' | 'review';
 export type PostStatus = 'draft' | 'published';
 
 export interface AdminPost {
@@ -8,7 +7,6 @@ export interface AdminPost {
   content: string;
   tags: string[];
   date: string;
-  category: PostCategory;
   status: PostStatus;
 }
 
@@ -28,6 +26,8 @@ export interface AboutProfile {
   focusPoints: string[];
   email: string;
   github: string;
+  /** 前台「关于本站」面板正文 */
+  siteAbout: string;
 }
 
 export interface AdminGoodSite {

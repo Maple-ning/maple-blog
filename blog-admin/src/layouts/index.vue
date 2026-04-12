@@ -17,6 +17,8 @@ const navItems = computed(() =>
   routes
     .filter((item) => item.path === '/')
     .flatMap((item) => item.children ?? [])
+    // 纯 redirect 子路由不应出现在顶栏（否则会出现 posts/tech 等无效项）
+    .filter((child) => child.component != null)
     .map((item) => ({
       to: item.path?.startsWith('/') ? String(item.path) : `/${String(item.path)}`,
       label: (item.meta?.title as string) || String(item.name || item.path),

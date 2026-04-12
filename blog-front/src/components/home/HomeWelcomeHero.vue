@@ -15,7 +15,6 @@ onMounted(() => {
     <div class="home-welcome__aurora" aria-hidden="true" />
     <div class="home-welcome__mesh" aria-hidden="true" />
     <div class="home-welcome__grid" aria-hidden="true" />
-    <div class="home-welcome__scan" aria-hidden="true" />
 
     <div class="home-welcome__content">
       <p class="home-welcome__badge">
@@ -23,7 +22,7 @@ onMounted(() => {
         枫叶小站
       </p>
       <h2 class="home-welcome__title">欢迎来到枫叶小站</h2>
-      <p class="home-welcome__tagline">学习记录 · 学习笔记 · 项目展示</p>
+      <p class="home-welcome__tagline">文章 · 项目</p>
     </div>
 
     <div class="home-welcome__particles" aria-hidden="true">
@@ -84,25 +83,6 @@ onMounted(() => {
   background-size: 28px 28px;
   mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, black 20%, transparent 70%);
   z-index: 2;
-}
-
-.home-welcome__scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 120%;
-  top: -10%;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(56, 189, 248, 0.12) 48%,
-    rgba(56, 189, 248, 0.12) 52%,
-    transparent 100%
-  );
-  transform: translateY(-100%);
-  animation: home-welcome-scan 5.5s ease-in-out infinite;
-  z-index: 3;
-  pointer-events: none;
 }
 
 .home-welcome__content {
@@ -274,20 +254,6 @@ onMounted(() => {
   }
   100% {
     opacity: 1;
-  }
-}
-
-@keyframes home-welcome-scan {
-  0%,
-  12% {
-    transform: translateY(-100%);
-  }
-  45% {
-    transform: translateY(0%);
-  }
-  88%,
-  100% {
-    transform: translateY(100%);
   }
 }
 

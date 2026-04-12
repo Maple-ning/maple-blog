@@ -19,8 +19,7 @@ const tocItems = ref<TocItem[]>([]);
 const activeTocId = ref('');
 const tocScrollContainer = ref<HTMLElement | null>(null);
 
-const backRouteName = computed(() => (post.value?.category === 'review' ? 'review-posts' : 'tech-posts'));
-const categoryLabel = computed(() => (post.value?.category === 'review' ? '学习笔记' : '学习记录'));
+const backRouteName = 'posts' as const;
 
 const slugify = (text: string) =>
   text
@@ -166,32 +165,27 @@ onBeforeUnmount(unbindTocSpy);
 </script>
 
 <template>
-  <section v-if="post" class="space-y-4">
-    <div class="text-sm text-slate-500 dark:text-slate-400">
-      <RouterLink
-        :to="{ name: backRouteName }"
-        class="hover:text-blue-600 dark:hover:text-blue-400"
-      >
-        {{ categoryLabel }}
-      </RouterLink>
-      <span class="mx-2">/</span>
-      <span class="text-slate-500 dark:text-slate-400">文章</span>
+  <section v-if="post" class="nova-post-detail space-y-4">
+    <div class="nova-post-detail__crumb">
+      <RouterLink :to="{ name: backRouteName }">博文</RouterLink>
+      <span class="nova-post-detail__crumb-sep">/</span>
+      <span class="nova-post-detail__crumb-current">{{ post.title }}</span>
     </div>
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start">
-      <a-card>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ post.title }}</h1>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ post.date }}</p>
-        <div class="mt-3 flex flex-wrap gap-2">
+      <a-card class="nova-post-card">
+        <h1 class="nova-post-detail__title">{{ post.title }}</h1>
+        <p class="nova-post-detail__date">{{ post.date }}</p>
+        <div class="nova-post-detail__tags mt-3 flex flex-wrap gap-2">
           <a-tag v-for="tag in post.tags" :key="tag">{{ tag }}</a-tag>
         </div>
-        <article class="markdown-body mt-6 text-gray-800 dark:text-gray-200" v-html="htmlContent" />
+        <article class="markdown-body nova-post-detail__body mt-6" v-html="htmlContent" />
       </a-card>
 
       <div
         v-if="tocItems.length > 0"
         class="hidden xl:block xl:sticky xl:top-4 xl:self-start xl:max-h-[calc(100vh-7rem)] xl:overflow-auto"
       >
-        <a-card title="目录">
+        <a-card class="nova-post-card" title="目录">
           <div class="post-toc">
             <a
               v-for="item in tocItems"
@@ -214,7 +208,7 @@ onBeforeUnmount(unbindTocSpy);
     </div>
   </section>
 
-  <a-result v-else status="404" title="文章不存在" sub-title="请检查文章链接是否正确。">
+  <a-result v-else status="404" title="博文不存在" sub-title="请检查博文链接是否正确。">
     <template #extra>
       <RouterLink :to="{ name: 'home' }">
         <a-button type="primary">返回首页</a-button>
@@ -228,18 +222,19 @@ onBeforeUnmount(unbindTocSpy);
   display: block;
   margin: 0.35rem 0;
   overflow: hidden;
-  color: rgb(71 85 105);
+  color: var(--nova-text-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .post-toc-link:hover {
-  color: rgb(37 99 235);
+  color: var(--nova-accent);
 }
 
 .post-toc-active {
-  color: rgb(37 99 235);
+  color: var(--nova-accent);
+  font-weight: 600;
 }
 
 .post-toc-l1 {
@@ -257,21 +252,15 @@ onBeforeUnmount(unbindTocSpy);
   font-size: 0.88rem;
 }
 
-.dark .post-toc-link {
-  color: rgb(148 163 184);
-}
-
-.dark .post-toc-link:hover {
-  color: rgb(96 165 250);
-}
-
-.dark .post-toc-active {
-  color: rgb(147 197 253);
-}
-
 .markdown-body :deep(h1[id]),
 .markdown-body :deep(h2[id]),
 .markdown-body :deep(h3[id]) {
   scroll-margin-top: 6rem;
+}
+
+.nova-post-detail__tags :deep(.ant-tag) {
+  border-color: var(--nova-border);
+  color: var(--nova-text-muted);
+  background: color-mix(in srgb, var(--nova-surface) 85%, transparent);
 }
 </style>

@@ -80,7 +80,7 @@ npm run dev
 ## 5. 接口列表
 
 - `GET /health`
-- `GET /api/posts?category=tech|review`
+- `GET /api/posts`（可选 `?status=published|draft`，需登录时草稿可见）
 - `POST /api/posts`
 - `PUT /api/posts/:id`
 - `DELETE /api/posts/:id`

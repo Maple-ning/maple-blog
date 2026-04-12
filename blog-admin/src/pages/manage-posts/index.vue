@@ -4,8 +4,8 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import AdminPostMarkdownEditor from '@/components/AdminPostMarkdownEditor.vue';
 import { useBlogAdmin } from '@/composables/useBlogAdmin';
 
-const { postsByCategory, upsertPost, deletePost, init } = useBlogAdmin();
-const posts = computed(() => postsByCategory('tech'));
+const { posts, upsertPost, deletePost, init } = useBlogAdmin();
+
 const modalOpen = ref(false);
 
 const form = reactive({
@@ -58,21 +58,22 @@ const submit = async () => {
       .map((t) => t.trim())
       .filter(Boolean),
     date: form.date,
-    category: 'tech',
     status: form.status,
   });
   reset();
   modalOpen.value = false;
 };
 
+const modalTitle = computed(() => (form.id ? '编辑博文' : '新增博文'));
+
 onMounted(init);
 </script>
 
 <template>
   <section>
-    <a-card title="学习记录列表">
+    <a-card title="博文列表">
       <template #extra>
-        <a-button type="primary" @click="openCreate">新增学习记录</a-button>
+        <a-button type="primary" @click="openCreate">新增博文</a-button>
       </template>
       <div class="admin-list">
         <article v-for="item in posts" :key="item.id" class="admin-list-item">
@@ -103,7 +104,7 @@ onMounted(init);
 
     <a-modal
       v-model:open="modalOpen"
-      :title="form.id ? '编辑学习记录' : '新增学习记录'"
+      :title="modalTitle"
       ok-text="保存"
       cancel-text="取消"
       width="min(1180px, 96vw)"
@@ -118,14 +119,14 @@ onMounted(init);
         <a-input v-model:value="form.summary" placeholder="摘要" />
         <a-input v-model:value="form.tagsText" placeholder="标签，逗号分隔" />
         <a-input v-model:value="form.date" placeholder="日期，例如 2026-03-24" />
-        <a-select v-model:value="form.status" placeholder="文章状态">
+        <a-select v-model:value="form.status" placeholder="状态">
           <a-select-option value="draft">草稿</a-select-option>
           <a-select-option value="published">发布</a-select-option>
         </a-select>
         <AdminPostMarkdownEditor
-          :key="form.id ?? 'create-tech'"
+          :key="String(form.id ?? 'new')"
           v-model="form.content"
-          editor-id="admin-tech-post-md"
+          editor-id="admin-unified-post-md"
         />
       </div>
     </a-modal>

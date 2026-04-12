@@ -75,8 +75,9 @@ function Pack-Backend {
     throw "Backend path does not exist: $localPath"
   }
 
-  Write-Host "==> Packing backend"
-  $archivePath = Join-Path $ArtifactsDir "backend.tar.gz"
+  $backendName = if ($Backend.Name) { $Backend.Name } else { $Backend.ProcessName }
+  Write-Host "==> Packing backend: $backendName"
+  $archivePath = Join-Path $ArtifactsDir "$backendName.tar.gz"
   if (Test-Path $archivePath) {
     Remove-Item $archivePath -Force
   }
@@ -86,6 +87,17 @@ function Pack-Backend {
     throw "Failed to create backend archive: $archivePath"
   }
   return $archivePath
+}
+
+function Get-Backends {
+  param([hashtable]$Config)
+  if ($Config.Backends) {
+    return @($Config.Backends)
+  }
+  if ($Config.Backend) {
+    return @($Config.Backend)
+  }
+  throw "Invalid config: missing Backend or Backends"
 }
 
 if (-not (Test-Path $ConfigPath)) {
@@ -98,8 +110,9 @@ Require-Command -Name "tar"
 Require-Command -Name "npm"
 
 $config = . $ConfigPath
-if (-not $config.Server -or -not $config.Backend -or -not $config.Frontends) {
-  throw "Invalid config: missing Server/Backend/Frontends"
+$backends = Get-Backends -Config $config
+if (-not $config.Server -or -not $backends -or -not $config.Frontends) {
+  throw "Invalid config: missing Server/Backends/Frontends"
 }
 
 $workspaceRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -116,7 +129,14 @@ $frontendArchives = @(
     }
   }
 )
-$backendArchive = Pack-Backend -Backend $config.Backend -WorkspaceRoot $workspaceRoot -ArtifactsDir $artifactsDir
+$backendArchives = @(
+  foreach ($backend in $backends) {
+    @{
+      Config  = $backend
+      Archive = (Pack-Backend -Backend $backend -WorkspaceRoot $workspaceRoot -ArtifactsDir $artifactsDir)
+    }
+  }
+)
 
 $serverHost = $config.Server.Host
 $user = $config.Server.User
@@ -139,7 +159,11 @@ Write-Host "==> Creating remote temp directory: $remoteTmp"
 & ssh @sshArgs $target "mkdir -p $remoteTmp"
 
 Write-Host "==> Uploading deployment artifacts"
-& scp @scpArgs $backendArchive "$target`:$remoteTmp/backend.tar.gz"
+foreach ($item in $backendArchives) {
+  $archivePath = $item.Archive
+  $archiveName = [System.IO.Path]::GetFileName($archivePath)
+  & scp @scpArgs $archivePath "$target`:$remoteTmp/$archiveName"
+}
 foreach ($item in $frontendArchives) {
   $archivePath = $item.Archive
   $archiveName = [System.IO.Path]::GetFileName($archivePath)
@@ -171,9 +195,41 @@ echo 'Frontend deployed (nested): $name -> $remotePath/current/dist'
   }
 }
 
-$backendRemotePath = $config.Backend.RemotePath
-$processName = $config.Backend.ProcessName
-$startScript = $config.Backend.StartScript
+$backendDeployLines = @()
+foreach ($item in $backendArchives) {
+  $backend = $item.Config
+  $backendName = if ($backend.Name) { $backend.Name } else { $backend.ProcessName }
+  $backendRemotePath = $backend.RemotePath
+  $processName = $backend.ProcessName
+  $startScript = $backend.StartScript
+  $archiveName = [System.IO.Path]::GetFileName($item.Archive)
+  $postDeploy = ""
+  if ($backend.PostDeployCommands) {
+    $postDeploy = (($backend.PostDeployCommands | ForEach-Object { $_ }) -join "`n")
+  }
+  $backendDeployLines += @"
+mkdir -p '$backendRemotePath/app'
+rm -rf '$backendRemotePath/app'/*
+tar -xzf '$remoteTmp/$archiveName' -C '$backendRemotePath/app'
+
+if [ -f '$backendRemotePath/shared/.env' ]; then
+  cp '$backendRemotePath/shared/.env' '$backendRemotePath/app/.env'
+  echo 'Loaded backend env from shared/.env for $backendName'
+else
+  echo 'Warning: backend shared/.env not found for $backendName, skip env copy'
+fi
+
+cd '$backendRemotePath/app'
+npm ci --omit=dev
+
+if pm2 describe '$processName' >/dev/null 2>&1; then
+  pm2 delete '$processName'
+fi
+pm2 start npm --name '$processName' --cwd '$backendRemotePath/app' -- run '$startScript'
+$postDeploy
+echo 'Backend deployed: $backendName'
+"@
+}
 
 $remoteScript = @"
 set -euo pipefail
@@ -183,25 +239,8 @@ if ! command -v pm2 >/dev/null 2>&1; then
   exit 1
 fi
 
-mkdir -p '$backendRemotePath/app'
-rm -rf '$backendRemotePath/app'/*
-tar -xzf '$remoteTmp/backend.tar.gz' -C '$backendRemotePath/app'
+$(($backendDeployLines -join "`n"))
 
-if [ -f '$backendRemotePath/shared/.env' ]; then
-  cp '$backendRemotePath/shared/.env' '$backendRemotePath/app/.env'
-  echo 'Loaded backend env from shared/.env'
-else
-  echo 'Warning: backend shared/.env not found, skip env copy'
-fi
-
-cd '$backendRemotePath/app'
-npm ci --omit=dev
-
-# Recreate PM2 app so script path/cwd stay under app/ (restart alone does not update them).
-if pm2 describe '$processName' >/dev/null 2>&1; then
-  pm2 delete '$processName'
-fi
-pm2 start npm --name '$processName' --cwd '$backendRemotePath/app' -- run '$startScript'
 pm2 save
 
 $(($frontendDeployLines -join "`n"))

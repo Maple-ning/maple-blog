@@ -17,6 +17,7 @@ const siteModalOpen = ref(false);
 const categorySortModalOpen = ref(false);
 const draftCategoryOrder = ref<string[]>([]);
 const savingCategoryOrder = ref(false);
+const selectedCategoryFilter = ref<string | undefined>(undefined);
 
 const form = reactive({
   id: undefined as number | undefined,
@@ -30,15 +31,30 @@ const form = reactive({
 /** 与服务器同步后的分类顺序（弹框打开时从此复制草稿） */
 const localCategoryOrder = ref<string[]>([]);
 
+const categoryOptions = ref<string[]>([]);
+
 const rebuildLocalCategoryOrder = () => {
   const set = new Set(goodSites.value.map((s) => s.category));
   const primary = goodSiteCategoryOrder.value.filter((c) => set.has(c));
   const missing = [...set].filter((c) => !primary.includes(c));
   missing.sort((a, b) => a.localeCompare(b, 'zh-CN'));
   localCategoryOrder.value = [...primary, ...missing];
+  categoryOptions.value = [...localCategoryOrder.value];
+};
+
+const filteredGoodSites = ref<typeof goodSites.value>([]);
+
+const rebuildFilteredGoodSites = () => {
+  const current = selectedCategoryFilter.value;
+  if (!current) {
+    filteredGoodSites.value = [...goodSites.value];
+    return;
+  }
+  filteredGoodSites.value = goodSites.value.filter((item) => item.category === current);
 };
 
 watch([goodSites, goodSiteCategoryOrder], rebuildLocalCategoryOrder, { deep: true });
+watch([goodSites, selectedCategoryFilter], rebuildFilteredGoodSites, { deep: true });
 
 const openCategorySortModal = () => {
   draftCategoryOrder.value = [...localCategoryOrder.value];
@@ -92,7 +108,14 @@ const reset = () => {
 
 const openCreate = () => {
   reset();
+  if (selectedCategoryFilter.value) {
+    form.category = selectedCategoryFilter.value;
+  }
   siteModalOpen.value = true;
+};
+
+const onCategoryFilterChange = (value: unknown) => {
+  selectedCategoryFilter.value = typeof value === 'string' && value ? value : undefined;
 };
 
 const editItem = (id: number) => {
@@ -124,6 +147,7 @@ const submit = async () => {
 onMounted(async () => {
   await init();
   rebuildLocalCategoryOrder();
+  rebuildFilteredGoodSites();
 });
 </script>
 
@@ -144,8 +168,21 @@ onMounted(async () => {
       <p class="mb-3 text-sm text-gray-500">
         前台「好站」页的分类顺序可通过右上角「调整分类顺序」在弹框中修改；每条记录的「排序」只影响同一分类内的先后。
       </p>
+      <div class="mb-4">
+        <a-select
+          v-model:value="selectedCategoryFilter"
+          allow-clear
+          placeholder="按分类筛选（默认全部）"
+          class="w-full max-w-[320px]"
+          @change="onCategoryFilterChange"
+        >
+          <a-select-option v-for="category in categoryOptions" :key="category" :value="category">
+            {{ category }}
+          </a-select-option>
+        </a-select>
+      </div>
       <div class="admin-list">
-        <article v-for="item in goodSites" :key="item.id" class="admin-list-item">
+        <article v-for="item in filteredGoodSites" :key="item.id" class="admin-list-item">
           <div class="admin-list-top">
             <div>
               <p class="admin-list-title">{{ item.title }}</p>
@@ -172,7 +209,7 @@ onMounted(async () => {
           </div>
         </article>
       </div>
-      <a-empty v-if="goodSites.length === 0" description="暂无内容" />
+      <a-empty v-if="filteredGoodSites.length === 0" :description="selectedCategoryFilter ? '该分类下暂无内容' : '暂无内容'" />
     </a-card>
 
     <a-modal

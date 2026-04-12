@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "sql:good-site-category-order": "node scripts/apply-good-site-category-order.js",
     "sql:profile-extended-fields": "node scripts/apply-profile-extended-fields.js",
+    "sql:profile-site-about": "node scripts/apply-profile-site-about.js",
+    "sql:drop-post-category": "node scripts/apply-drop-post-category.js",
     "sql:project-source-code-url": "node scripts/apply-project-source-code-url.js",
     "seed:good-sites-mock": "node scripts/seed-good-sites-mock.js --clear",
     "seed:front-menu-mock": "node scripts/seed-front-menu-mock.js"
