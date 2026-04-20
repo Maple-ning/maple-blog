@@ -7,6 +7,8 @@ export interface ProjectItem {
   techStack: string[];
   url: string;
   sourceCodeUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const toStringArray = (value: unknown): string[] => {
@@ -31,5 +33,7 @@ export const getProjects = async (): Promise<ProjectItem[]> => {
     techStack: toStringArray(item.tech_stack),
     url: String(item.url ?? ''),
     sourceCodeUrl: String(item.source_code_url ?? ''),
+    createdAt: String(item.created_at ?? ''),
+    updatedAt: String(item.updated_at ?? ''),
   }));
 };

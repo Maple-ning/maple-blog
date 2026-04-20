@@ -66,7 +66,7 @@
 
 - **博客前台新增 AI 门户菜单**：`blog-front` 顶栏/抽屉导航支持外链项，新增「AI门户」直达 `/ai/`；为避免重复，顶部导航中隐藏原内部 `ai-note` 菜单项（路由仍可直达）。
 
-- **AI 跳转失败修复**：菜单链接改为配置项 `VITE_AI_PORTAL_URL`（开发环境指向 `http://8.163.46.202/ai/`），并在服务器 `nginx` 增加 `/ai/`、`/ai/assets/`、`/ai/index.html` 路由后 reload；线上 `http://8.163.46.202/ai/` 已返回 200。
+- **AI 跳转失败修复**：菜单链接改为配置项 `VITE_AI_PORTAL_URL`（开发环境指向 `http://www.maple-web.cn/ai/`），并在服务器 `nginx` 增加 `/ai/`、`/ai/assets/`、`/ai/index.html` 路由后 reload；线上 `http://www.maple-web.cn/ai/` 已返回 200。
 
 - **去掉扫描线动效**：移除全局 `.nova-scan-line`（整页下移高亮条）及 `HomeWelcomeHero` 内 `.home-welcome__scan`；删除各主题下已无用的 `--nova-scan-accent`，降低视觉干扰。（已 `deploy/deploy.ps1` 发版上线。）
 
@@ -141,3 +141,15 @@
 ## 2026-04-11 · blog-ai 门户 UI（已还原）
 
 - 本条记录的设计改动已由上条「样式还原」撤回，仅作历史说明保留。
+
+## 2026-04-12 · blog-ai-admin 新增入口与弹窗
+
+- **顶栏**：去掉学习历程 / AI资讯 / 项目页的「添加」按钮，仅保留主题切换与「查看 AI探索站」；新建统一由各列表页内操作。
+- **`PostsView`**：修复 **「新增内容 / 新增资讯」** 点击后弹窗空白的问题（原 **`v-if="editor.id"`** 导致新建时表单不渲染）；新建时主按钮文案为 **「创建」**，隐藏删除；资讯列表增加与历程一致的 **标题行 +「新增资讯」**。
+- **`App.vue`**：移除与 **`PostsView`** 重复的 **顶栏「添加学习笔记/资讯」** 弹窗及 **`writeForm`**，减少双轨编辑。
+- **`ProjectsView`**：在 **「项目列表」** 面板头增加 **「添加项目」**，仍打开原有 **`App`** 侧新建项目弹窗。
+
+## 2026-04-12 · blog-ai-admin 弹窗布局统一
+
+- **`style.css`**：弹窗统一为 **`modal-header` / `modal-body` / `modal-footer`**；**`modal`** 使用 **`max-height: min(92dvh, calc(100vh - 2rem))`** + **`modal-overlay`** 内边距与安全区，整体不超出视口；**`modal-body`** 单独 **`overflow-y: auto`**；双栏编辑使用 **`modal-body--split`** + **`modal-split__form` / `modal-split__preview`**，仅中间区域滚动（表单列与预览列各自可滚）。移除旧的 **`modal > :last-child`** 与 **`admin-form--scroll` / `modal-preview-scroll`** 高度魔法数。
+- **`PostsView` / `App.vue` / `ProjectsView`**：各 **`modal`** 用 **`modal-stack`**（`form`）包住可滚 **`modal-body`** 与固定 **`modal-footer`**；笔记/项目双栏与阶段命名弹窗均对齐该结构。

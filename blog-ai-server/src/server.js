@@ -6,7 +6,111 @@ const { hasDatabaseConfig, pool } = require('./config/db');
 const port = Number(process.env.PORT || 3011);
 const dataFile = path.join(__dirname, '..', 'data', 'content.json');
 const journeyStagesMetaFile = path.join(__dirname, '..', 'data', 'journey-stages.json');
+const conceptGraphMetaFile = path.join(__dirname, '..', 'data', 'concept-graph.json');
 const collectionKeys = ['journey', 'insights', 'projects'];
+const defaultConceptGraph = {
+  nodes: [
+    {
+      name: 'LLM',
+      category: 'core',
+      desc: '大语言模型负责理解、推理和生成，是整个 AI 体验的基础能力中心。',
+      example: 'GPT / Claude / Gemini',
+    },
+    {
+      name: 'Agent',
+      category: 'agent',
+      desc: '智能体把模型、任务拆解、工具调用和状态管理串联起来。',
+      example: '任务规划与自动执行',
+    },
+    {
+      name: 'RAG',
+      category: 'tool',
+      desc: '检索增强生成让回答不只依赖参数知识，也能利用外部资料。',
+      example: '向量检索 + 重排序',
+    },
+    {
+      name: 'MCP',
+      category: 'tool',
+      desc: '模型上下文协议负责把工具、资源和能力标准化接入到模型侧。',
+      example: '统一工具调用协议',
+    },
+    {
+      name: 'Workflow',
+      category: 'skill',
+      desc: '工作流把复杂任务拆成多步节点，让执行过程更可控、更稳定。',
+      example: '编排式任务流',
+    },
+    {
+      name: 'Memory',
+      category: 'skill',
+      desc: '记忆层负责保存上下文、用户偏好和阶段性结果，提升连续交互体验。',
+      example: '短期记忆 / 长期记忆',
+    },
+    {
+      name: 'Search',
+      category: 'skill',
+      desc: '搜索能力帮助系统获取实时信息，补足模型离线知识边界。',
+      example: '联网检索',
+    },
+    {
+      name: 'Tool Calling',
+      category: 'agent',
+      desc: '工具调用把模型输出转成可执行动作，连接外部系统与数据。',
+      example: '函数调用 / API 执行',
+    },
+  ],
+  edges: [
+    {
+      source: 'LLM',
+      target: 'Agent',
+      relation: '驱动核心',
+      description: 'Agent 以 LLM 作为理解与决策的中枢。',
+    },
+    {
+      source: 'Agent',
+      target: 'Workflow',
+      relation: '执行编排',
+      description: '复杂任务通常通过 Workflow 被组织为多步骤流程。',
+    },
+    {
+      source: 'Agent',
+      target: 'Tool Calling',
+      relation: '动作出口',
+      description: 'Agent 通过 Tool Calling 与外部能力发生交互。',
+    },
+    {
+      source: 'Tool Calling',
+      target: 'MCP',
+      relation: '协议承载',
+      description: 'MCP 为工具和资源接入提供统一标准。',
+    },
+    {
+      source: 'Agent',
+      target: 'Memory',
+      relation: '状态维持',
+      description: '记忆帮助 Agent 保持连续任务中的上下文一致性。',
+    },
+    {
+      source: 'RAG',
+      target: 'Search',
+      relation: '检索协作',
+      description: 'Search 为 RAG 提供实时来源与候选信息。',
+    },
+    {
+      source: 'Agent',
+      target: 'RAG',
+      relation: '知识增强',
+      description: 'Agent 接入 RAG 来补足动态知识和垂直领域内容。',
+    },
+    {
+      source: 'LLM',
+      target: 'Memory',
+      relation: '上下文利用',
+      description: '模型结合记忆内容生成更连贯、更贴合用户的问题回答。',
+    },
+  ],
+  updatedAt: '',
+};
 
 function json(res, statusCode, payload) {
   res.writeHead(statusCode, {
@@ -63,11 +167,88 @@ async function ensureJourneyStagesInFileStore(store) {
   }
 }
 
+function normalizeConceptGraphNode(node) {
+  return {
+    name: normalizeText(node?.name),
+    category: normalizeText(node?.category, 'core') || 'core',
+    desc: normalizeText(node?.desc),
+    example: normalizeText(node?.example),
+    ...(Number.isFinite(Number(node?.symbolSize))
+      ? { symbolSize: normalizeNumber(node.symbolSize, 0) || undefined }
+      : {}),
+  };
+}
+
+function normalizeConceptGraphEdge(edge) {
+  return {
+    source: normalizeText(edge?.source),
+    target: normalizeText(edge?.target),
+    relation: normalizeText(edge?.relation),
+    description: normalizeText(edge?.description),
+  };
+}
+
+function normalizeConceptGraphPayload(payload) {
+  const nodesInput = Array.isArray(payload?.nodes) ? payload.nodes : [];
+  const edgesInput = Array.isArray(payload?.edges) ? payload.edges : [];
+  const nodes = nodesInput.map(normalizeConceptGraphNode).filter((node) => node.name);
+  const edges = edgesInput.map(normalizeConceptGraphEdge).filter((edge) => edge.source && edge.target);
+
+  if (!nodes.length) {
+    throw new Error('至少需要保留一个节点。');
+  }
+
+  const nameSet = new Set();
+  for (const node of nodes) {
+    if (nameSet.has(node.name)) {
+      throw new Error(`节点名称重复：${node.name}`);
+    }
+    nameSet.add(node.name);
+  }
+
+  for (const edge of edges) {
+    if (!nameSet.has(edge.source) || !nameSet.has(edge.target)) {
+      throw new Error(`连线 ${edge.source} -> ${edge.target} 指向了不存在的节点。`);
+    }
+  }
+
+  return {
+    nodes,
+    edges,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+async function ensureConceptGraphInFileStore(store) {
+  if (!store.conceptGraph) {
+    store.conceptGraph = {
+      ...defaultConceptGraph,
+      updatedAt: new Date().toISOString(),
+    };
+    await writeFileStore(store);
+    return;
+  }
+
+  try {
+    store.conceptGraph = {
+      ...normalizeConceptGraphPayload(store.conceptGraph),
+      updatedAt: store.conceptGraph.updatedAt || new Date().toISOString(),
+    };
+  } catch (_error) {
+    store.conceptGraph = {
+      ...defaultConceptGraph,
+      updatedAt: new Date().toISOString(),
+    };
+    await writeFileStore(store);
+  }
+}
+
 async function readFileStore() {
   const raw = await fs.readFile(dataFile, 'utf8');
   const store = JSON.parse(raw);
   if (!hasDatabaseConfig || !pool) {
     await ensureJourneyStagesInFileStore(store);
+    await ensureConceptGraphInFileStore(store);
   }
   return store;
 }
@@ -96,6 +277,29 @@ async function writeMysqlJourneyStages(stages) {
   return sorted;
 }
 
+async function readConceptGraphMetaRaw() {
+  try {
+    const raw = await fs.readFile(conceptGraphMetaFile, 'utf8');
+    const data = JSON.parse(raw);
+    return {
+      ...normalizeConceptGraphPayload(data),
+      updatedAt: data.updatedAt || new Date().toISOString(),
+    };
+  } catch (_error) {
+    return null;
+  }
+}
+
+async function writeConceptGraphMeta(payload) {
+  const normalized = normalizeConceptGraphPayload(payload);
+  await fs.writeFile(
+    conceptGraphMetaFile,
+    `${JSON.stringify(normalized, null, 2)}\n`,
+    'utf8',
+  );
+  return normalized;
+}
+
 async function seedMysqlJourneyStagesIfEmpty() {
   let stages = sortJourneyStages(await readMysqlJourneyStagesRaw());
   if (stages.length) {
@@ -122,6 +326,31 @@ async function getJourneyStages() {
     return sortJourneyStages(store.journeyStages || []);
   }
   return await seedMysqlJourneyStagesIfEmpty();
+}
+
+async function getConceptGraph() {
+  if (!hasDatabaseConfig || !pool) {
+    const store = await readFileStore();
+    return store.conceptGraph;
+  }
+
+  const existing = await readConceptGraphMetaRaw();
+  if (existing) {
+    return existing;
+  }
+
+  return writeConceptGraphMeta(defaultConceptGraph);
+}
+
+async function updateConceptGraph(payload) {
+  if (!hasDatabaseConfig || !pool) {
+    const store = await readFileStore();
+    store.conceptGraph = normalizeConceptGraphPayload(payload);
+    await writeFileStore(store);
+    return store.conceptGraph;
+  }
+
+  return writeConceptGraphMeta(payload);
 }
 
 function normalizeJourneyStagesPayload(stagesInput) {
@@ -931,6 +1160,23 @@ async function handleRequest(req, res) {
     return;
   }
 
+  if (pathname === '/api/concept-graph' && req.method === 'GET') {
+    json(res, 200, await getConceptGraph());
+    return;
+  }
+
+  if (pathname === '/api/concept-graph' && req.method === 'PUT') {
+    const payload = await parseBody(req);
+    try {
+      json(res, 200, await updateConceptGraph(payload));
+    } catch (error) {
+      json(res, 400, {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+    return;
+  }
+
   if (pathname === '/api/taxonomy' && req.method === 'PUT') {
     const payload = await parseBody(req);
     json(res, 200, await updateTaxonomy(payload));
@@ -944,6 +1190,11 @@ async function handleRequest(req, res) {
 
   if (pathname === '/api/public/taxonomy' && req.method === 'GET') {
     json(res, 200, await getTaxonomy());
+    return;
+  }
+
+  if (pathname === '/api/public/concept-graph' && req.method === 'GET') {
+    json(res, 200, await getConceptGraph());
     return;
   }
 

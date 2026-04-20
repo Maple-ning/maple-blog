@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from 'node:url';
 
+import { federation } from '@module-federation/vite';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
@@ -11,6 +12,8 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const appTitle = env.VITE_APP_TITLE || '枫叶小站';
+  const mapleSharesRemote =
+    env.VITE_MAPLE_SHARES_REMOTE || '/maple-shares/remote/remoteEntry.js';
 
   return {
     base: '/blog/',
@@ -26,6 +29,20 @@ export default defineConfig(({ mode }) => {
           return html.replace(/__APP_TITLE__/g, appTitle);
         },
       },
+      federation({
+        name: 'blogFront',
+        remotes: {
+          mapleShares: {
+            type: 'module',
+            name: 'mapleShares',
+            entry: mapleSharesRemote,
+            entryGlobalName: 'mapleShares',
+            shareScope: 'default',
+          },
+        },
+        shared: ['vue'],
+        moduleParseIdleTimeout: 30,
+      }),
       vue(),
       tailwindcss(),
       Components({
@@ -39,6 +56,8 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    build: {
+      target: 'chrome89',
+    },
   };
 });
-

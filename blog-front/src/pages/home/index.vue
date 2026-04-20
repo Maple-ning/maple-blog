@@ -17,10 +17,9 @@ const profile = ref<Awaited<ReturnType<typeof getProfile>>>(null);
 
 const articleTotal = computed(() => allPosts.value.length);
 const projectTotal = computed(() => projects.value.length);
+const githubStarsDisplay = '5';
 
-const heroLine1 = computed(() =>
-  profile.value?.name?.trim() ? `你好，我是 ${profile.value.name.trim()}` : '欢迎来到',
-);
+const heroLine1 = computed(() => '');
 
 const heroIntro = computed(
   () =>
@@ -37,9 +36,42 @@ const recentPosts = computed(() =>
   [...allPosts.value].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4),
 );
 
+const projectSortValue = (project: ProjectItem) => {
+  const timestamp = Date.parse(String(project.updatedAt || project.createdAt || ''));
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const recentProjects = computed(() =>
+  [...projects.value]
+    .sort((a, b) => projectSortValue(b) - projectSortValue(a) || b.id - a.id)
+    .slice(0, 4),
+);
+
 const estReadMinutes = (post: PostItem) => Math.max(1, Math.ceil((post.content?.length ?? 0) / 1200));
 
 const postMiniTag = (post: PostItem) => post.tags[0]?.trim() || '文章';
+
+const projectMiniTag = (project: ProjectItem) => project.techStack[0]?.trim() || '项目';
+
+const toComparableUrl = (url?: string) => String(url || '').trim().replace(/\/+$/, '').toLowerCase();
+
+const hasProjectLiveLink = (project: ProjectItem) => /^https?:\/\//i.test(String(project.url || '').trim());
+
+const hasProjectSourceLink = (project: ProjectItem) => {
+  const source = toComparableUrl(project.sourceCodeUrl);
+  if (!source || !/^https?:\/\//i.test(source)) return false;
+  return source !== toComparableUrl(project.url);
+};
+
+const projectStatusLabel = (project: ProjectItem) => (hasProjectLiveLink(project) ? '已发布' : '开发中');
+
+const projectUpdatedLabel = (project: ProjectItem) => {
+  const value = String(project.updatedAt || project.createdAt || '').trim();
+  return value ? `更新于 ${value.slice(0, 10)}` : `项目 #${project.id}`;
+};
+
+const projectTechSummary = (project: ProjectItem) =>
+  project.techStack.slice(0, 3).join(' · ') || '持续迭代中';
 
 const goPost = (slug: string) => {
   void router.push({ name: 'post-detail', params: { slug } });
@@ -120,7 +152,7 @@ onMounted(async () => {
       :intro="heroIntro"
       :article-total="articleTotal"
       :project-total="projectTotal"
-      stars-display="—"
+      :stars-display="githubStarsDisplay"
       :badge-text="heroBadge"
     >
       <template #actions>
@@ -142,7 +174,7 @@ onMounted(async () => {
       </div>
       <div class="nova-home-stat-card">
         <div class="nova-home-stat-icon" aria-hidden="true">⭐</div>
-        <div class="nova-home-stat-num nova-home-stat-num--text">—</div>
+        <div class="nova-home-stat-num nova-home-stat-num--text">{{ githubStarsDisplay }}</div>
         <div class="nova-home-stat-label">GitHub Stars</div>
       </div>
       <div class="nova-home-stat-card">
@@ -154,7 +186,13 @@ onMounted(async () => {
 
     <header class="nova-section-header nova-home-latest-head">
       <div class="nova-section-tag">LATEST</div>
-      <h2 class="nova-section-title">最新博文</h2>
+      <div class="nova-home-section-headline">
+        <h2 class="nova-section-title">最新博文</h2>
+        <RouterLink :to="{ name: 'posts' }" class="nova-home-latest-link no-underline">
+          查看全部
+        </RouterLink>
+      </div>
+      <p class="nova-section-desc">最近写下来的内容都放在这里，方便快速浏览和继续阅读。</p>
     </header>
 
     <div class="nova-posts-mini-grid">
@@ -178,5 +216,72 @@ onMounted(async () => {
     </div>
 
     <a-empty v-if="recentPosts.length === 0" class="!mt-6" description="暂无博文" />
+
+    <header class="nova-section-header nova-home-projects-head">
+      <div class="nova-section-tag">PROJECTS</div>
+      <div class="nova-home-section-headline">
+        <h2 class="nova-section-title">最近项目</h2>
+        <RouterLink :to="{ name: 'projects' }" class="nova-home-latest-link no-underline">
+          查看全部
+        </RouterLink>
+      </div>
+      <p class="nova-section-desc">把最近更新和在推进的项目单独收一块，和文章分开看会更清楚。</p>
+    </header>
+
+    <div class="nova-projects-mini-grid">
+      <article v-for="project in recentProjects" :key="project.id" class="nova-project-mini-card">
+        <div class="nova-project-mini-top">
+          <div class="nova-project-mini-tag">{{ projectMiniTag(project) }}</div>
+          <span
+            class="nova-project-mini-status"
+            :class="
+              hasProjectLiveLink(project)
+                ? 'nova-project-mini-status--active'
+                : 'nova-project-mini-status--wip'
+            "
+          >
+            {{ projectStatusLabel(project) }}
+          </span>
+        </div>
+
+        <h3 class="nova-project-mini-title">{{ project.name }}</h3>
+        <p class="nova-project-mini-desc">{{ project.description }}</p>
+
+        <div class="nova-project-mini-meta">
+          <span>{{ projectUpdatedLabel(project) }}</span>
+          <span>{{ projectTechSummary(project) }}</span>
+        </div>
+
+        <div class="nova-project-mini-links">
+          <a
+            v-if="hasProjectLiveLink(project)"
+            class="nova-project-mini-link nova-project-mini-link--primary"
+            :href="project.url"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            查看项目
+          </a>
+          <a
+            v-if="hasProjectSourceLink(project)"
+            class="nova-project-mini-link"
+            :href="project.sourceCodeUrl"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            查看源码
+          </a>
+          <RouterLink
+            v-if="!hasProjectLiveLink(project) && !hasProjectSourceLink(project)"
+            :to="{ name: 'projects' }"
+            class="nova-project-mini-link"
+          >
+            浏览项目列表
+          </RouterLink>
+        </div>
+      </article>
+    </div>
+
+    <a-empty v-if="recentProjects.length === 0" class="!mt-6" description="暂无项目" />
   </section>
 </template>

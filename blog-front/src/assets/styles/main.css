@@ -1,15 +1,15 @@
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
 
-html {
-  overflow-y: auto;
+html,
+body,
+#app {
+  height: 100%;
 }
 
 body {
   min-height: 100vh;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
+  overflow: hidden;
 }
 
 /* 暗黑切换时 Ant 组件颜色过渡更顺滑（与顶栏 300ms 接近） */
@@ -42,6 +42,14 @@ body {
 .nova-home-stat-card {
   position: relative;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  grid-template-areas:
+    'icon num'
+    'icon label';
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 2px;
   border-radius: var(--nova-radius);
   border: 1px solid var(--nova-border);
   background: var(--nova-card-bg);
@@ -77,13 +85,13 @@ body {
 }
 
 .nova-home-stat-icon {
+  grid-area: icon;
   display: flex;
   width: 44px;
   height: 44px;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  margin-bottom: 16px;
   background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent2));
   font-size: 20px;
   line-height: 1;
@@ -91,25 +99,55 @@ body {
 }
 
 .nova-home-stat-num {
+  grid-area: num;
+  align-self: end;
   font-family: var(--font-family-mono);
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1;
   color: var(--nova-text);
 }
 
 .nova-home-stat-num--text {
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .nova-home-stat-label {
-  margin-top: 8px;
-  font-size: 13px;
+  grid-area: label;
+  align-self: start;
+  font-size: 12px;
+  line-height: 1.2;
   color: var(--nova-text-muted);
 }
 
 .nova-home-latest-head {
   margin-bottom: 0;
+}
+
+.nova-home-projects-head {
+  margin-top: 56px;
+}
+
+.nova-home-section-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nova-home-latest-link {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--nova-accent);
+  transition:
+    color var(--nova-transition),
+    opacity var(--nova-transition);
+}
+
+.nova-home-latest-link:hover {
+  color: var(--nova-accent2);
+  opacity: 0.92;
 }
 
 .nova-posts-mini-grid {
@@ -185,6 +223,150 @@ body {
   color: var(--nova-text-muted);
 }
 
+.nova-projects-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.nova-project-mini-card {
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  border-radius: var(--nova-radius);
+  border: 1px solid var(--nova-border);
+  background: var(--nova-card-bg);
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  transition:
+    transform var(--nova-transition),
+    border-color var(--nova-transition),
+    box-shadow var(--nova-transition);
+}
+
+.nova-project-mini-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.nova-project-mini-card:hover {
+  border-color: var(--nova-border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--nova-glow);
+}
+
+.nova-project-mini-card:hover::after {
+  opacity: 0.06;
+}
+
+.nova-project-mini-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.nova-project-mini-tag {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--nova-accent);
+}
+
+.nova-project-mini-status {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+}
+
+.nova-project-mini-status--active {
+  border-color: rgb(34 197 94 / 0.2);
+  background: rgb(34 197 94 / 0.08);
+  color: rgb(34 197 94 / 0.92);
+}
+
+.nova-project-mini-status--wip {
+  border-color: rgb(245 158 11 / 0.18);
+  background: rgb(245 158 11 / 0.08);
+  color: rgb(245 158 11 / 0.92);
+}
+
+.nova-project-mini-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--nova-text);
+}
+
+.nova-project-mini-desc {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--nova-text-muted);
+}
+
+.nova-project-mini-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--nova-text-muted);
+}
+
+.nova-project-mini-links {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.nova-project-mini-link {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  color: var(--nova-text-muted);
+  transition: color var(--nova-transition);
+}
+
+.nova-project-mini-link:hover {
+  color: var(--nova-accent);
+}
+
+.nova-project-mini-link--primary {
+  color: var(--nova-text);
+}
+
 @media (max-width: 900px) {
   .nova-home-stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -196,14 +378,40 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .nova-home-stat-card {
+    grid-template-columns: 40px 1fr;
+    column-gap: 14px;
+    padding: 20px;
+  }
+
+  .nova-home-section-headline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .nova-posts-mini-grid {
     grid-template-columns: 1fr;
+  }
+
+  .nova-projects-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nova-project-mini-card {
+    padding: 18px;
+  }
+
+  .nova-project-mini-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .nova-home-stat-card:hover,
-  .nova-post-mini-card:hover {
+  .nova-post-mini-card:hover,
+  .nova-project-mini-card:hover {
     transform: none;
   }
 }
@@ -432,148 +640,14 @@ html.dark .markdown-body :where(h1, h2, h3, h4, h5, h6) {
   background: #1f2937;
 }
 
-/* ========== Nova 多主题（html[data-nova-theme]） ========== */
+/* ========== Nova 双主题（html[data-nova-theme]） ========== */
 :root {
   --nova-transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --nova-radius: 16px;
   --nova-radius-sm: 8px;
 }
 
-html[data-nova-theme='cyber'] {
-  --nova-page-bg: #080c14;
-  --nova-bg2: #0d1424;
-  --nova-bg3: #111d36;
-  --nova-surface: rgba(17, 29, 54, 0.8);
-  --nova-border: rgba(0, 210, 255, 0.15);
-  --nova-border-hover: rgba(0, 210, 255, 0.5);
-  --nova-text: #e2eaff;
-  --nova-text-muted: #7a9cc9;
-  --nova-accent: #00d2ff;
-  --nova-accent2: #7b2fff;
-  --nova-accent3: #ff2d78;
-  --nova-glow: 0 0 20px rgba(0, 210, 255, 0.3);
-  --nova-glow2: 0 0 20px rgba(123, 47, 255, 0.3);
-  --nova-nav-bg: rgba(8, 12, 20, 0.9);
-  --nova-card-bg: rgba(13, 20, 36, 0.9);
-  --nova-sticky-bg: rgba(8, 12, 20, 0.88);
-}
-
-html[data-nova-theme='aurora'] {
-  --nova-page-bg: #0a0e1a;
-  --nova-bg2: #0f1627;
-  --nova-bg3: #141d35;
-  --nova-surface: rgba(20, 29, 53, 0.8);
-  --nova-border: rgba(120, 220, 160, 0.15);
-  --nova-border-hover: rgba(120, 220, 160, 0.5);
-  --nova-text: #dff5ea;
-  --nova-text-muted: #7aaa9c;
-  --nova-accent: #78dc9a;
-  --nova-accent2: #40e0d0;
-  --nova-accent3: #ffd166;
-  --nova-glow: 0 0 20px rgba(120, 220, 154, 0.3);
-  --nova-glow2: 0 0 20px rgba(64, 224, 208, 0.3);
-  --nova-nav-bg: rgba(10, 14, 26, 0.9);
-  --nova-card-bg: rgba(15, 22, 39, 0.9);
-  --nova-sticky-bg: rgba(10, 14, 26, 0.88);
-}
-
-html[data-nova-theme='solar'] {
-  --nova-page-bg: #0f0a00;
-  --nova-bg2: #1a1000;
-  --nova-bg3: #261800;
-  --nova-surface: rgba(38, 24, 0, 0.8);
-  --nova-border: rgba(255, 160, 30, 0.15);
-  --nova-border-hover: rgba(255, 160, 30, 0.5);
-  --nova-text: #fff3e0;
-  --nova-text-muted: #c49a6c;
-  --nova-accent: #ff9f1c;
-  --nova-accent2: #ff4d6d;
-  --nova-accent3: #7bed9f;
-  --nova-glow: 0 0 20px rgba(255, 159, 28, 0.3);
-  --nova-glow2: 0 0 20px rgba(255, 77, 109, 0.3);
-  --nova-nav-bg: rgba(15, 10, 0, 0.9);
-  --nova-card-bg: rgba(26, 16, 0, 0.9);
-  --nova-sticky-bg: rgba(15, 10, 0, 0.88);
-}
-
-html[data-nova-theme='sakura'] {
-  --nova-page-bg: #fdf4f8;
-  --nova-bg2: #f8eaf2;
-  --nova-bg3: #f0daea;
-  --nova-surface: rgba(255, 255, 255, 0.9);
-  --nova-border: rgba(220, 100, 160, 0.2);
-  --nova-border-hover: rgba(220, 100, 160, 0.55);
-  --nova-text: #2d1a26;
-  --nova-text-muted: #9a6080;
-  --nova-accent: #e05c99;
-  --nova-accent2: #9b5de5;
-  --nova-accent3: #00bbf9;
-  --nova-glow: 0 0 20px rgba(224, 92, 153, 0.25);
-  --nova-glow2: 0 0 20px rgba(155, 93, 229, 0.25);
-  --nova-nav-bg: rgba(253, 244, 248, 0.95);
-  --nova-card-bg: rgba(255, 255, 255, 0.95);
-  --nova-sticky-bg: rgba(253, 244, 248, 0.94);
-}
-
-html[data-nova-theme='void'] {
-  --nova-page-bg: #0a0814;
-  --nova-bg2: #100d1a;
-  --nova-bg3: #181228;
-  --nova-surface: rgba(22, 18, 40, 0.82);
-  --nova-border: rgba(167, 139, 250, 0.16);
-  --nova-border-hover: rgba(167, 139, 250, 0.48);
-  --nova-text: #ece9ff;
-  --nova-text-muted: #9588b8;
-  --nova-accent: #a78bfa;
-  --nova-accent2: #6366f1;
-  --nova-accent3: #f472b6;
-  --nova-glow: 0 0 20px rgba(167, 139, 250, 0.28);
-  --nova-glow2: 0 0 20px rgba(99, 102, 241, 0.28);
-  --nova-nav-bg: rgba(10, 8, 20, 0.92);
-  --nova-card-bg: rgba(16, 12, 32, 0.9);
-  --nova-sticky-bg: rgba(10, 8, 20, 0.88);
-}
-
-html[data-nova-theme='ember'] {
-  --nova-page-bg: #110808;
-  --nova-bg2: #1a0c0a;
-  --nova-bg3: #261210;
-  --nova-surface: rgba(38, 18, 16, 0.82);
-  --nova-border: rgba(248, 113, 113, 0.16);
-  --nova-border-hover: rgba(248, 113, 113, 0.48);
-  --nova-text: #ffeeeb;
-  --nova-text-muted: #c48a82;
-  --nova-accent: #f87171;
-  --nova-accent2: #fb923c;
-  --nova-accent3: #fbbf24;
-  --nova-glow: 0 0 20px rgba(248, 113, 113, 0.26);
-  --nova-glow2: 0 0 20px rgba(251, 146, 60, 0.24);
-  --nova-nav-bg: rgba(17, 8, 8, 0.92);
-  --nova-card-bg: rgba(26, 12, 10, 0.9);
-  --nova-sticky-bg: rgba(17, 8, 8, 0.88);
-}
-
-html[data-nova-theme='moss'] {
-  --nova-page-bg: #060c09;
-  --nova-bg2: #0b1410;
-  --nova-bg3: #101c16;
-  --nova-surface: rgba(16, 28, 22, 0.82);
-  --nova-border: rgba(74, 222, 128, 0.14);
-  --nova-border-hover: rgba(74, 222, 128, 0.45);
-  --nova-text: #e8fff1;
-  --nova-text-muted: #6fa082;
-  --nova-accent: #4ade80;
-  --nova-accent2: #2dd4bf;
-  --nova-accent3: #a3e635;
-  --nova-glow: 0 0 20px rgba(74, 222, 128, 0.24);
-  --nova-glow2: 0 0 20px rgba(45, 212, 191, 0.22);
-  --nova-nav-bg: rgba(6, 12, 9, 0.92);
-  --nova-card-bg: rgba(11, 20, 16, 0.9);
-  --nova-sticky-bg: rgba(6, 12, 9, 0.88);
-}
-
-/* 深灰：深色灰阶默认主题，无彩色强调 */
-html[data-nova-theme='ink'] {
+html[data-nova-theme='dark'] {
   --nova-page-bg: #0c0c0c;
   --nova-bg2: #121212;
   --nova-bg3: #181818;
@@ -590,29 +664,11 @@ html[data-nova-theme='ink'] {
   --nova-nav-bg: rgba(12, 12, 12, 0.92);
   --nova-card-bg: rgba(22, 22, 22, 0.92);
   --nova-sticky-bg: rgba(12, 12, 12, 0.88);
+  --nova-filter-bg: rgba(28, 28, 28, 0.88);
+  --nova-filter-active-bg: rgba(255, 255, 255, 0.1);
 }
 
-html[data-nova-theme='frost'] {
-  --nova-page-bg: #edf2f8;
-  --nova-bg2: #e3ebf4;
-  --nova-bg3: #d7e4ef;
-  --nova-surface: rgba(255, 255, 255, 0.92);
-  --nova-border: rgba(14, 165, 233, 0.18);
-  --nova-border-hover: rgba(14, 165, 233, 0.45);
-  --nova-text: #0f172a;
-  --nova-text-muted: #64748b;
-  --nova-accent: #0284c7;
-  --nova-accent2: #38bdf8;
-  --nova-accent3: #6366f1;
-  --nova-glow: 0 0 18px rgba(2, 132, 199, 0.2);
-  --nova-glow2: 0 0 18px rgba(56, 189, 248, 0.2);
-  --nova-nav-bg: rgba(237, 242, 248, 0.96);
-  --nova-card-bg: rgba(255, 255, 255, 0.95);
-  --nova-sticky-bg: rgba(237, 242, 248, 0.94);
-}
-
-/* 黑白：极简灰阶浅色，无彩色强调 */
-html[data-nova-theme='mono'] {
+html[data-nova-theme='light'] {
   --nova-page-bg: #f6f6f6;
   --nova-bg2: #ececec;
   --nova-bg3: #e2e2e2;
@@ -629,6 +685,8 @@ html[data-nova-theme='mono'] {
   --nova-nav-bg: rgba(246, 246, 246, 0.96);
   --nova-card-bg: rgba(255, 255, 255, 0.96);
   --nova-sticky-bg: rgba(246, 246, 246, 0.94);
+  --nova-filter-bg: rgba(255, 255, 255, 0.94);
+  --nova-filter-active-bg: rgba(23, 23, 23, 0.08);
 }
 
 /* 全局粒子（原型 particles） */
@@ -1217,19 +1275,35 @@ html.dark .blog-card-lift:hover {
 .nova-tag-filters {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-bottom: 32px;
 }
 
 .nova-tag-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
   padding: 6px 16px;
   border-radius: 50px;
   border: 1px solid var(--nova-border);
   color: var(--nova-text-muted);
   font-size: 13px;
+  line-height: 1.35;
+  white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--nova-surface);
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: var(--nova-filter-bg, var(--nova-surface));
+  background-clip: padding-box;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -1237,8 +1311,14 @@ html.dark .blog-card-lift:hover {
 .nova-tag-filter--active {
   border-color: var(--nova-accent);
   color: var(--nova-accent);
+  background: var(--nova-filter-active-bg);
   background: color-mix(in srgb, var(--nova-accent) 12%, transparent);
   box-shadow: var(--nova-glow);
+}
+
+.nova-tag-filter:focus-visible {
+  outline: 2px solid var(--nova-accent);
+  outline-offset: 2px;
 }
 
 .nova-articles-list {
@@ -1567,6 +1647,7 @@ a.nova-p-link--primary:hover {
 .nova-bookmark-categories {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-bottom: 32px;
 }

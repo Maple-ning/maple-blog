@@ -1,20 +1,7 @@
-/** 展示顺序：深色组 → 浅色组 */
-export const NOVA_THEMES = [
-  'cyber',
-  'aurora',
-  'solar',
-  'void',
-  'ember',
-  'moss',
-  'ink',
-  'sakura',
-  'frost',
-  'mono',
-] as const;
+export const NOVA_THEMES = ['dark', 'light'] as const;
 export type NovaThemeId = (typeof NOVA_THEMES)[number];
 
-/** 使用浅色底 + 不挂 `html.dark` 的主题 */
-export const NOVA_LIGHT_THEMES = ['sakura', 'frost', 'mono'] as const;
+export const NOVA_LIGHT_THEMES = ['light'] as const;
 
 export const NOVA_THEME_STORAGE_KEY = 'nova-theme';
 
@@ -44,10 +31,20 @@ export function resolveInitialNovaTheme(): NovaThemeId {
   if (stored) return stored;
 
   if (typeof localStorage !== 'undefined') {
+    const legacyNovaTheme = localStorage.getItem(NOVA_THEME_STORAGE_KEY);
+    if (legacyNovaTheme) {
+      if (['sakura', 'frost', 'mono', 'light'].includes(legacyNovaTheme)) return 'light';
+      if (
+        ['cyber', 'aurora', 'solar', 'void', 'ember', 'moss', 'ink', 'dark'].includes(legacyNovaTheme)
+      ) {
+        return 'dark';
+      }
+    }
+
     const legacy = localStorage.getItem('theme-mode');
-    if (legacy === 'light') return 'sakura';
-    if (legacy === 'dark') return 'ink';
+    if (legacy === 'light') return 'light';
+    if (legacy === 'dark') return 'dark';
   }
 
-  return 'ink';
+  return 'dark';
 }

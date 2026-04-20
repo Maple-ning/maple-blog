@@ -22,6 +22,12 @@ function readThemeFromDom(): NovaThemeId | null {
 import AppHeader from '@/layouts/components/AppHeader.vue';
 
 type NavItem = { name?: string; label: string; href?: string };
+type PortalItem = {
+  label: string;
+  href: string;
+  description: string;
+  target?: '_self' | '_blank';
+};
 
 const route = useRoute();
 const novaTheme = ref<NovaThemeId>(readThemeFromDom() ?? resolveInitialNovaTheme());
@@ -51,7 +57,20 @@ const navItems = computed<NavItem[]>(() => {
   return internalItems;
 });
 
-const aiPortalItem = computed<NavItem>(() => ({ label: 'AI门户', href: appConfig.aiPortalUrl }));
+const portalItems = computed<PortalItem[]>(() => [
+  {
+    label: 'AI探索站',
+    href: appConfig.aiPortalUrl,
+    description: '进入 AI 工具与体验集合',
+    target: '_self',
+  },
+  {
+    label: '联邦组件库',
+    href: appConfig.mapleSharesDocsUrl,
+    description: '查看 Maple Shares 在线文档',
+    target: '_blank',
+  },
+]);
 
 const activeNavKeys = computed((): string[] => {
   const path = route.path;
@@ -94,8 +113,8 @@ const currentPageTitle = computed(() => {
   return matched?.label || '页面';
 });
 
-const setNovaTheme = (id: NovaThemeId) => {
-  novaTheme.value = id;
+const toggleNovaTheme = () => {
+  novaTheme.value = novaTheme.value === 'dark' ? 'light' : 'dark';
 };
 
 const rebuildParticles = () => {
@@ -122,6 +141,44 @@ const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value;
 };
 
+const resolveNavigationUrl = (href: string) => new URL(href, window.location.origin).toString();
+
+const confirmNavigation = ({
+  href,
+  target = '_self',
+  title = '即将跳转外部网站',
+}: {
+  href: string;
+  target?: '_self' | '_blank';
+  title?: string;
+}) => {
+  const resolved = resolveNavigationUrl(href);
+
+  Modal.confirm({
+    title,
+    content: resolved,
+    okText: '继续访问',
+    cancelText: '取消',
+    onOk: () => {
+      if (target === '_blank') {
+        const opened = window.open(resolved, '_blank', 'noopener,noreferrer');
+        if (opened) opened.opener = null;
+        return;
+      }
+
+      window.location.assign(resolved);
+    },
+  });
+};
+
+const openPortalItem = (item: PortalItem) => {
+  confirmNavigation({
+    href: item.href,
+    target: item.target,
+    title: `即将前往 ${item.label}`,
+  });
+};
+
 const isExternalHttpUrl = (href: string) => {
   try {
     const url = new URL(href, window.location.origin);
@@ -143,33 +200,9 @@ const onRootClickCapture = (event: MouseEvent) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const resolved = new URL(href, window.location.origin).toString();
-  const nextTarget = anchor.target || '_self';
-  Modal.confirm({
-    title: '即将跳转外部网站',
-    content: resolved,
-    okText: '继续访问',
-    cancelText: '取消',
-    onOk: () => {
-      if (nextTarget === '_blank') {
-        const opened = window.open(resolved, '_blank', 'noopener,noreferrer');
-        if (opened) opened.opener = null;
-        return;
-      }
-      window.location.assign(resolved);
-    },
-  });
-};
-
-const openAiPortal = () => {
-  Modal.confirm({
-    title: '是否前往AI门户？',
-    content: appConfig.aiPortalUrl,
-    okText: '前往',
-    cancelText: '取消',
-    onOk: () => {
-      window.location.assign(appConfig.aiPortalUrl);
-    },
+  confirmNavigation({
+    href,
+    target: (anchor.target as '_self' | '_blank') || '_self',
   });
 };
 
@@ -182,7 +215,6 @@ onMounted(() => {
 watch(novaTheme, (id) => {
   localStorage.setItem(NOVA_THEME_STORAGE_KEY, id);
   applyNovaThemeToDocument(id);
-  void nextTick(() => rebuildParticles());
 });
 
 watch(
@@ -212,14 +244,14 @@ watch(
     <ConfigProvider :theme="antTheme">
       <AppHeader
         :nav-items="navItems"
-        :ai-portal-item="aiPortalItem"
+        :portal-items="portalItems"
         :active-nav-keys="activeNavKeys"
         :mobile-menu-open="mobileMenuOpen"
         :nova-theme="novaTheme"
         @toggle-mobile-menu="toggleMobileMenu"
         @update-mobile-menu="mobileMenuOpen = $event"
-        @set-nova-theme="setNovaTheme"
-        @open-ai-portal="openAiPortal"
+        @toggle-nova-theme="toggleNovaTheme"
+        @open-portal-item="openPortalItem"
       />
       <main
         ref="contentScrollRef"

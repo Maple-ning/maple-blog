@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { BgColorsOutlined } from '@ant-design/icons-vue';
 import { RouterLink } from 'vue-router';
 
-import { isNovaThemeId, NOVA_THEMES, type NovaThemeId } from '@/composables/useNovaTheme';
+import type { NovaThemeId } from '@/composables/useNovaTheme';
+import AppThemeSwitch from '@/layouts/components/AppThemeSwitch.vue';
 
 interface NavItem {
   name?: string;
@@ -10,57 +10,30 @@ interface NavItem {
   href?: string;
 }
 
+interface PortalItem {
+  label: string;
+  href: string;
+  description: string;
+  target?: '_self' | '_blank';
+}
+
 defineProps<{
   navItems: NavItem[];
-  aiPortalItem?: NavItem | null;
+  portalItems?: PortalItem[];
   activeNavKeys: string[];
   mobileMenuOpen: boolean;
   novaTheme: NovaThemeId;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   toggleMobileMenu: [];
   updateMobileMenu: [open: boolean];
-  setNovaTheme: [id: NovaThemeId];
-  openAiPortal: [];
+  toggleNovaTheme: [];
+  openPortalItem: [item: PortalItem];
 }>();
-
-const themeLabel: Record<NovaThemeId, string> = {
-  cyber: '赛博蓝',
-  aurora: '极光绿',
-  solar: '太阳橙',
-  void: '夜幕紫',
-  ember: '余烬红',
-  moss: '苔原绿',
-  ink: '深灰',
-  sakura: '樱花粉',
-  frost: '霜青',
-  mono: '黑白',
-};
-
-const themeDotClass = (id: NovaThemeId) => {
-  const map: Record<NovaThemeId, string> = {
-    cyber: 'nova-theme-dot--cyber',
-    aurora: 'nova-theme-dot--aurora',
-    solar: 'nova-theme-dot--solar',
-    void: 'nova-theme-dot--void',
-    ember: 'nova-theme-dot--ember',
-    moss: 'nova-theme-dot--moss',
-    ink: 'nova-theme-dot--ink',
-    sakura: 'nova-theme-dot--sakura',
-    frost: 'nova-theme-dot--frost',
-    mono: 'nova-theme-dot--mono',
-  };
-  return map[id];
-};
 
 const isNavActive = (name: string | undefined, keys: string[]) =>
   Boolean(name) && keys.includes(String(name));
-
-const onThemeMenuClick = (info: { key: string | number }) => {
-  const key = String(info.key);
-  if (isNovaThemeId(key)) emit('setNovaTheme', key);
-};
 </script>
 
 <template>
@@ -106,51 +79,68 @@ const onThemeMenuClick = (info: { key: string | number }) => {
           </nav>
         </div>
 
-        <button
-          v-if="aiPortalItem?.href"
-          type="button"
-          class="nova-ai-portal-link shrink-0"
-          @click="$emit('openAiPortal')"
-        >
-          {{ aiPortalItem.label }}
-        </button>
-
         <a-dropdown
-          :trigger="['hover', 'click']"
+          v-if="portalItems?.length"
           placement="bottomRight"
-          :mouse-enter-delay="0.08"
-          :mouse-leave-delay="0.32"
-          overlay-class-name="nova-theme-dropdown-shell"
+          :trigger="['click']"
+          overlay-class-name="nova-portal-dropdown"
         >
-          <button
-            type="button"
-            class="nova-theme-trigger shrink-0"
-            title="配色主题"
-            aria-label="打开配色主题菜单"
-            aria-haspopup="menu"
-          >
-            <BgColorsOutlined class="nova-theme-trigger-icon" />
-            <span class="nova-theme-trigger-swatch" :class="themeDotClass(novaTheme)" aria-hidden="true" />
+          <button type="button" class="nova-ai-menu-trigger shrink-0" aria-label="打开探索入口菜单">
+            <svg
+              class="nova-ai-menu-trigger__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="M12 3.5 14.3 9l5.7 2.3-5.7 2.3L12 19.5l-2.3-5.9L4 11.3 9.7 9 12 3.5Z" />
+            </svg>
+            <span>探索</span>
+            <svg
+              class="nova-ai-menu-trigger__chevron"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="m7 10 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </button>
           <template #overlay>
-            <a-menu
-              class="nova-theme-dropdown-menu"
-              :selected-keys="[novaTheme]"
-              @click="onThemeMenuClick"
-            >
-              <a-menu-item v-for="id in NOVA_THEMES" :key="id" class="nova-theme-menu-item">
-                <div class="nova-theme-option">
-                  <span
-                    class="nova-theme-dot nova-theme-dot--menu"
-                    :class="[themeDotClass(id), { 'nova-theme-dot--active': novaTheme === id }]"
+            <a-menu :selectable="false" class="nova-portal-menu">
+              <a-menu-item v-for="item in portalItems" :key="item.href" class="nova-portal-menu__entry">
+                <button
+                  type="button"
+                  class="nova-portal-menu__link nova-portal-menu__button"
+                  @click="$emit('openPortalItem', item)"
+                >
+                  <span class="nova-portal-menu__copy">
+                    <span class="nova-portal-menu__title">{{ item.label }}</span>
+                    <span class="nova-portal-menu__desc">{{ item.description }}</span>
+                  </span>
+                  <svg
+                    class="nova-portal-menu__arrow"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
                     aria-hidden="true"
-                  />
-                  <span class="nova-theme-option-title">{{ themeLabel[id] }}</span>
-                </div>
+                  >
+                    <path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
               </a-menu-item>
             </a-menu>
           </template>
         </a-dropdown>
+
+        <AppThemeSwitch
+          class="nova-header-theme-switch shrink-0"
+          :checked="novaTheme === 'dark'"
+          @toggle="$emit('toggleNovaTheme')"
+        />
       </div>
 
       <div class="flex h-full w-full items-center justify-between lg:hidden">
@@ -158,10 +148,15 @@ const onThemeMenuClick = (info: { key: string | number }) => {
           :to="{ name: 'home' }"
           class="nova-logo-link flex min-w-0 items-center gap-2 no-underline"
         >
-          <span class="nova-logo-mark flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-base" aria-hidden="true">
+          <span
+            class="nova-logo-mark flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-base"
+            aria-hidden="true"
+          >
             🍁
           </span>
-          <span class="truncate text-[15px] font-semibold tracking-tight text-[color:var(--nova-text)]">枫叶小站</span>
+          <span class="truncate text-[15px] font-semibold tracking-tight text-[color:var(--nova-text)]">
+            枫叶小站
+          </span>
         </RouterLink>
         <button
           type="button"
@@ -196,26 +191,10 @@ const onThemeMenuClick = (info: { key: string | number }) => {
     @update:open="$emit('updateMobileMenu', $event)"
   >
     <div class="mb-6">
-      <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[color:var(--nova-text-muted)]">主题</p>
-      <div class="nova-theme-drawer-list">
-        <button
-          v-for="id in NOVA_THEMES"
-          :key="`drawer-${id}`"
-          type="button"
-          class="nova-theme-drawer-option"
-          :class="{ 'nova-theme-drawer-option--active': novaTheme === id }"
-          :aria-pressed="novaTheme === id"
-          :aria-label="`主题：${themeLabel[id]}`"
-          @click="$emit('setNovaTheme', id)"
-        >
-          <span
-            class="nova-theme-dot nova-theme-dot--menu shrink-0"
-            :class="[themeDotClass(id), { 'nova-theme-dot--active': novaTheme === id }]"
-            aria-hidden="true"
-          />
-          <span class="nova-theme-option-title">{{ themeLabel[id] }}</span>
-        </button>
-      </div>
+      <p class="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[color:var(--nova-text-muted)]">
+        主题
+      </p>
+      <AppThemeSwitch :checked="novaTheme === 'dark'" @toggle="$emit('toggleNovaTheme')" />
     </div>
     <nav class="nova-drawer-nav" aria-label="主导航">
       <template v-for="item in navItems" :key="`drawer-${item.name ?? item.href ?? item.label}`">
@@ -241,15 +220,22 @@ const onThemeMenuClick = (info: { key: string | number }) => {
           <span class="nova-drawer-link-chevron" aria-hidden="true">›</span>
         </RouterLink>
       </template>
-      <button
-        v-if="aiPortalItem?.href"
-        type="button"
-        class="nova-drawer-link nova-drawer-link--button"
-        @click="$emit('openAiPortal'); $emit('updateMobileMenu', false)"
-      >
-        <span>{{ aiPortalItem.label }}</span>
-        <span class="nova-drawer-link-chevron" aria-hidden="true">›</span>
-      </button>
+      <template v-if="portalItems?.length">
+        <div class="nova-drawer-section-title">探索入口</div>
+        <button
+          v-for="item in portalItems"
+          :key="`portal-${item.href}`"
+          type="button"
+          class="nova-drawer-link nova-drawer-link--portal"
+          @click="$emit('openPortalItem', item); $emit('updateMobileMenu', false)"
+        >
+          <span class="nova-drawer-link-copy">
+            <span>{{ item.label }}</span>
+            <small>{{ item.description }}</small>
+          </span>
+          <span class="nova-drawer-link-chevron" aria-hidden="true">›</span>
+        </button>
+      </template>
     </nav>
   </a-drawer>
 </template>
@@ -272,7 +258,6 @@ const onThemeMenuClick = (info: { key: string | number }) => {
   filter: brightness(1.05);
 }
 
-/* 现代顶栏常见形态：无外层「胶囊槽」，链接即导航（类似 Linear / Vercel / GitHub 顶栏） */
 .nova-nav-bar {
   display: flex;
   flex-wrap: wrap;
@@ -327,11 +312,12 @@ const onThemeMenuClick = (info: { key: string | number }) => {
   opacity: 0.9;
 }
 
-.nova-ai-portal-link {
+.nova-ai-menu-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 40px;
+  gap: 8px;
   padding: 0 14px;
   margin-left: auto;
   border-radius: 12px;
@@ -347,15 +333,30 @@ const onThemeMenuClick = (info: { key: string | number }) => {
     color 0.2s ease;
 }
 
-.nova-ai-portal-link:hover {
+.nova-ai-menu-trigger:hover {
   border-color: color-mix(in srgb, var(--nova-accent) 44%, var(--nova-border));
   background: color-mix(in srgb, var(--nova-accent) 14%, var(--nova-surface));
   color: var(--nova-accent);
 }
 
-.nova-ai-portal-link:focus-visible {
+.nova-ai-menu-trigger:focus-visible {
   outline: 2px solid var(--nova-accent);
   outline-offset: 2px;
+}
+
+.nova-ai-menu-trigger__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.nova-ai-menu-trigger__chevron {
+  width: 14px;
+  height: 14px;
+  opacity: 0.75;
+}
+
+.nova-header-theme-switch {
+  margin-left: 12px;
 }
 
 .nova-header-menu-btn {
@@ -410,6 +411,7 @@ const onThemeMenuClick = (info: { key: string | number }) => {
     border-color 0.2s ease,
     background-color 0.2s ease,
     color 0.2s ease;
+  cursor: pointer;
 }
 
 .nova-drawer-link:hover {
@@ -434,6 +436,24 @@ const onThemeMenuClick = (info: { key: string | number }) => {
   text-align: left;
 }
 
+.nova-drawer-link--portal {
+  align-items: flex-start;
+}
+
+.nova-drawer-link-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-drawer-link-copy small {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--nova-text-muted);
+}
+
 .nova-drawer-link-chevron {
   font-size: 18px;
   font-weight: 300;
@@ -445,186 +465,107 @@ const onThemeMenuClick = (info: { key: string | number }) => {
   color: var(--nova-accent);
 }
 
-.nova-theme-trigger {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 40px;
-  min-width: 40px;
-  padding: 0 10px;
-  border-radius: 12px;
-  border: 1px solid var(--nova-border);
-  background: color-mix(in srgb, var(--nova-surface) 88%, transparent);
+.nova-drawer-section-title {
+  margin: 14px 0 8px;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--nova-text-muted);
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    background-color 0.2s ease;
 }
 
-.nova-theme-trigger:hover {
-  border-color: color-mix(in srgb, var(--nova-accent) 28%, var(--nova-border));
+:global(.nova-portal-dropdown .ant-dropdown-menu) {
+  min-width: 260px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--nova-border);
+  background: color-mix(in srgb, var(--nova-surface) 96%, transparent);
+  box-shadow:
+    0 16px 40px -24px color-mix(in srgb, var(--nova-text) 24%, transparent),
+    0 6px 18px -12px color-mix(in srgb, var(--nova-text) 18%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+:global(.nova-portal-dropdown .ant-dropdown-menu-item) {
+  padding: 0;
+  border-radius: 12px;
+}
+
+:global(.nova-portal-dropdown .ant-dropdown-menu-title-content) {
+  display: block;
+}
+
+:global(.nova-portal-dropdown .ant-dropdown-menu-item:hover) {
+  background: transparent;
+}
+
+:global(.nova-portal-dropdown .ant-dropdown-menu-item:not(:last-child)) {
+  margin-bottom: 6px;
+}
+
+:global(.nova-portal-menu__link) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--nova-text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+:global(.nova-portal-menu__button) {
+  width: 100%;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+:global(.nova-portal-menu__link:hover) {
+  border-color: color-mix(in srgb, var(--nova-accent) 24%, var(--nova-border));
+  background: color-mix(in srgb, var(--nova-accent) 8%, var(--nova-surface));
   color: var(--nova-accent);
 }
 
-.nova-theme-trigger:focus-visible {
-  outline: 2px solid var(--nova-accent);
-  outline-offset: 2px;
-}
-
-.nova-theme-trigger-icon {
-  font-size: 18px;
-}
-
-.nova-theme-trigger-swatch {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--nova-text) 18%, transparent);
-}
-
-.nova-theme-option {
+:global(.nova-portal-menu__copy) {
   display: flex;
-  align-items: center;
-  gap: 12px;
   min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.nova-theme-option-title {
+:global(.nova-portal-menu__title) {
   font-size: 14px;
   font-weight: 600;
-  color: var(--nova-text);
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
-.nova-theme-drawer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+:global(.nova-portal-menu__desc) {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--nova-text-muted);
 }
 
-.nova-theme-drawer-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--nova-border);
-  background: color-mix(in srgb, var(--nova-surface) 70%, transparent);
-  cursor: pointer;
-  text-align: left;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.nova-theme-drawer-option:hover {
-  border-color: color-mix(in srgb, var(--nova-accent) 24%, var(--nova-border));
-  background: color-mix(in srgb, var(--nova-accent) 8%, var(--nova-surface));
-}
-
-.nova-theme-drawer-option--active {
-  border-color: color-mix(in srgb, var(--nova-accent) 40%, var(--nova-border));
-  background: color-mix(in srgb, var(--nova-accent) 12%, var(--nova-surface));
-}
-
-.nova-theme-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  padding: 0;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.nova-theme-dot--menu {
+:global(.nova-portal-menu__arrow) {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
-}
-
-.nova-theme-drawer-option:hover .nova-theme-dot--menu {
-  transform: scale(1.06);
-}
-
-.nova-theme-dot:hover {
-  transform: scale(1.18);
-}
-
-.nova-theme-dot--active {
-  border-color: #fff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-}
-
-:global(html[data-nova-theme='sakura']) .nova-theme-dot--active {
-  border-color: #2d1a26;
-  box-shadow: 0 0 0 2px rgba(224, 92, 153, 0.45);
-}
-
-:global(html[data-nova-theme='frost']) .nova-theme-dot--active {
-  border-color: #0f172a;
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.4);
-}
-
-:global(html[data-nova-theme='mono']) .nova-theme-dot--active {
-  border-color: #171717;
-  box-shadow: 0 0 0 2px rgba(23, 23, 23, 0.28);
-}
-
-.nova-theme-dot--cyber {
-  background: linear-gradient(135deg, #00d2ff, #7b2fff);
-}
-
-.nova-theme-dot--aurora {
-  background: linear-gradient(135deg, #78dc9a, #40e0d0);
-}
-
-.nova-theme-dot--solar {
-  background: linear-gradient(135deg, #ff9f1c, #ff4d6d);
-}
-
-.nova-theme-dot--sakura {
-  background: linear-gradient(135deg, #e05c99, #9b5de5);
-}
-
-.nova-theme-dot--void {
-  background: linear-gradient(135deg, #a78bfa, #6366f1);
-}
-
-.nova-theme-dot--ember {
-  background: linear-gradient(135deg, #f87171, #fb923c);
-}
-
-.nova-theme-dot--moss {
-  background: linear-gradient(135deg, #4ade80, #2dd4bf);
-}
-
-.nova-theme-dot--frost {
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-}
-
-.nova-theme-dot--mono {
-  background: linear-gradient(135deg, #171717, #a3a3a3);
-}
-
-.nova-theme-dot--ink {
-  background: linear-gradient(135deg, #f5f5f5, #525252);
+  opacity: 0.72;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .nova-nav-link,
   .nova-drawer-link,
   .nova-header-menu-btn,
-  .nova-theme-dot,
-  .nova-theme-trigger,
+  .nova-ai-menu-trigger,
   .nova-logo-mark {
     transition: none;
   }
@@ -632,65 +573,5 @@ const onThemeMenuClick = (info: { key: string | number }) => {
   .nova-logo-link.group:hover .nova-logo-mark {
     transform: none;
   }
-
-  .nova-theme-drawer-option:hover .nova-theme-dot--menu {
-    transform: none;
-  }
-}
-</style>
-
-<style>
-/* 下拉挂载在 body，需非 scoped */
-.nova-theme-dropdown-shell .ant-dropdown-menu {
-  margin-top: 6px;
-  padding: 6px;
-  min-width: 200px;
-  max-height: min(420px, 70vh);
-  overflow-y: auto;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--nova-border) 90%, transparent);
-  background: color-mix(in srgb, var(--nova-surface) 94%, transparent);
-  backdrop-filter: blur(16px);
-  box-shadow:
-    0 12px 40px color-mix(in srgb, #000 45%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--nova-text) 4%, transparent);
-}
-
-html[data-nova-theme='sakura'] .nova-theme-dropdown-shell .ant-dropdown-menu {
-  box-shadow:
-    0 12px 36px color-mix(in srgb, #2d1a26 12%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--nova-border) 80%, transparent);
-}
-
-html[data-nova-theme='frost'] .nova-theme-dropdown-shell .ant-dropdown-menu {
-  box-shadow:
-    0 12px 36px color-mix(in srgb, #0f172a 10%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--nova-border) 80%, transparent);
-}
-
-html[data-nova-theme='mono'] .nova-theme-dropdown-shell .ant-dropdown-menu {
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-
-.nova-theme-dropdown-shell .ant-dropdown-menu-item {
-  height: auto !important;
-  line-height: 1.25 !important;
-  padding: 8px 12px !important;
-  border-radius: 8px !important;
-}
-
-.nova-theme-dropdown-shell .ant-dropdown-menu-item-active,
-.nova-theme-dropdown-shell .ant-dropdown-menu-item:hover {
-  background: color-mix(in srgb, var(--nova-accent) 10%, var(--nova-surface)) !important;
-}
-
-.nova-theme-dropdown-shell .ant-dropdown-menu-item-selected {
-  background: color-mix(in srgb, var(--nova-accent) 14%, var(--nova-surface)) !important;
-}
-
-.nova-theme-dropdown-shell .ant-dropdown-menu-item:hover .nova-theme-dot--menu {
-  transform: scale(1.06);
 }
 </style>
