@@ -290,8 +290,8 @@ const removeSecondaryCategory = async (id: number): Promise<void> => {
   }
 };
 
-const onTreeSelect = (selectedKeys: Array<string>): void => {
-  selectedTreeKey.value = selectedKeys[0] ?? '';
+const onTreeSelect = (selectedKeys: (string | number)[]): void => {
+  selectedTreeKey.value = String(selectedKeys[0] ?? '');
 };
 
 onMounted(async () => {

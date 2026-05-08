@@ -316,7 +316,7 @@ onMounted(async () => {
 .nova-links-tree__primary:hover,
 .nova-links-tree__primary--active {
   background: rgba(177, 140, 72, 0.16);
-  color: #2b241d;
+  color: #7b5e2e;
 }
 
 .nova-links-tree__primary-icon {
@@ -334,6 +334,7 @@ onMounted(async () => {
 }
 
 .nova-links-tree__secondary {
+  position: relative;
   padding: 7px 0;
   font-size: 13px;
   color: #8b8074;
@@ -344,8 +345,21 @@ onMounted(async () => {
 
 .nova-links-tree__secondary:hover,
 .nova-links-tree__secondary--active {
-  color: #2b241d;
+  color: #7b5e2e;
   transform: translateX(2px);
+}
+
+.nova-links-tree__secondary--active::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid #b18c48;
+  transform: translateY(-50%);
 }
 
 .nova-links-content {
@@ -415,5 +429,44 @@ onMounted(async () => {
   .nova-links-empty-state {
     min-height: 280px;
   }
+}
+
+/* Dark mode overrides */
+:global(html.dark) .nova-links-tree__primary,
+:global(html.dark) .nova-links-tree__secondary {
+  color: rgba(244, 241, 234, 0.52);
+}
+
+:global(html.dark) .nova-links-tree__primary:hover,
+:global(html.dark) .nova-links-tree__primary--active {
+  background: rgba(240, 185, 11, 0.18);
+  color: #f0b90b;
+}
+
+:global(html.dark) .nova-links-tree__primary-icon {
+  color: rgba(244, 241, 234, 0.38);
+}
+
+:global(html.dark) .nova-links-tree__children {
+  border-left-color: rgba(244, 241, 234, 0.1);
+}
+
+:global(html.dark) .nova-links-tree__secondary:hover,
+:global(html.dark) .nova-links-tree__secondary--active {
+  color: #f0b90b;
+}
+
+:global(html.dark) .nova-links-tree__secondary--active::before {
+  border-left-color: #f0b90b;
+}
+
+:global(html.dark) .nova-links-feedback {
+  background: color-mix(in srgb, var(--nova-surface) 88%, transparent);
+  color: var(--nova-text-muted);
+}
+
+:global(html.dark) .nova-links-feedback--error {
+  color: #e07373;
+  background: color-mix(in srgb, #e07373 10%, var(--nova-surface));
 }
 </style>
