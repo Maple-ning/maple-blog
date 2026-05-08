@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File deploy/deploy.ps1)",
+      "Bash(tar --version)",
+      "Bash(tar -czf /tmp/test-tar.tar.gz -C blog-admin dist)",
+      "Bash(/usr/bin/tar --version)",
+      "Bash(where bash.exe)",
+      "Bash(cmd //c \"where tar\")",
+      "Bash(\"E:/Web Git/Git/usr/bin/tar.exe\" --version)",
+      "Bash(rm -f /tmp/test-git-tar.tar.gz)",
+      "Bash(\"E:/Web Git/Git/usr/bin/tar.exe\" -czf /tmp/test-git-tar.tar.gz -C \"E:/Ning/Project/maple-blog/blog-admin\" dist)",
+      "Bash(powershell.exe -Command ' *)"
+    ]
+  }
+}

@@ -14,6 +14,8 @@ const allPosts = ref<PostItem[]>([]);
 const projects = ref<ProjectItem[]>([]);
 const goodSitesCount = ref(0);
 const profile = ref<Awaited<ReturnType<typeof getProfile>>>(null);
+const homeLoading = ref<boolean>(true);
+const homeError = ref<string>('');
 
 const articleTotal = computed(() => allPosts.value.length);
 const projectTotal = computed(() => projects.value.length);
@@ -130,18 +132,35 @@ const runBigStatAnim = () => {
   }, d);
 };
 
+const loadHomePageData = async (): Promise<void> => {
+  homeLoading.value = true;
+  homeError.value = '';
+
+  try {
+    const [posts, projectList, sitesData, profileInfo] = await Promise.all([
+      getAllPublishedPosts(),
+      getProjects(),
+      getGoodSites(),
+      getProfile(),
+    ]);
+    allPosts.value = posts;
+    projects.value = projectList;
+    goodSitesCount.value = sitesData.items.length;
+    profile.value = profileInfo;
+    runBigStatAnim();
+  } catch (error: unknown) {
+    console.error('[loadHomePageData] failed to load home data', {
+      error,
+      routeName: 'home',
+    });
+    homeError.value = '首页数据加载失败，请稍后重试。';
+  } finally {
+    homeLoading.value = false;
+  }
+};
+
 onMounted(async () => {
-  const [posts, projectList, sitesData, profileInfo] = await Promise.all([
-    getAllPublishedPosts(),
-    getProjects(),
-    getGoodSites(),
-    getProfile(),
-  ]);
-  allPosts.value = posts;
-  projects.value = projectList;
-  goodSitesCount.value = sitesData.items.length;
-  profile.value = profileInfo;
-  runBigStatAnim();
+  await loadHomePageData();
 });
 </script>
 
@@ -160,6 +179,11 @@ onMounted(async () => {
         <RouterLink :to="{ name: 'projects' }" class="nova-btn-outline no-underline">⬡ 查看项目</RouterLink>
       </template>
     </HomeNovaHero>
+
+    <div v-if="homeError" class="nova-home-feedback nova-home-feedback--error">
+      {{ homeError }}
+    </div>
+    <div v-else-if="homeLoading" class="nova-home-feedback">首页内容加载中...</div>
 
     <div class="nova-home-stats-grid">
       <div class="nova-home-stat-card">
@@ -285,3 +309,20 @@ onMounted(async () => {
     <a-empty v-if="recentProjects.length === 0" class="!mt-6" description="暂无项目" />
   </section>
 </template>
+
+<style scoped>
+.nova-home-feedback {
+  margin: 24px 0 12px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--nova-border);
+  background: color-mix(in srgb, var(--nova-card-bg) 92%, transparent);
+  color: var(--nova-text-muted);
+  font-size: 14px;
+}
+
+.nova-home-feedback--error {
+  border-color: color-mix(in srgb, #ef4444 28%, var(--nova-border));
+  color: color-mix(in srgb, #ef4444 76%, var(--nova-text));
+}
+</style>

@@ -1,10 +1,10 @@
 import { http } from '../request';
 
-import type { GoodSiteApiItem } from '../types';
+import type { GoodSiteApiItem, GoodSiteCategoryTreeApiItem } from '../types';
 
 export interface GoodSitesApiPayload {
   items: GoodSiteApiItem[];
-  categoryOrder: string[];
+  categoryTree: GoodSiteCategoryTreeApiItem[];
 }
 
 const unwrapBody = (raw: unknown): unknown => {
@@ -21,14 +21,14 @@ export const getGoodSitesApi = async (): Promise<GoodSitesApiPayload> => {
   const { data } = await http.get<unknown>('/profile/good-sites');
   const body = unwrapBody(data);
   if (Array.isArray(body)) {
-    return { items: body as GoodSiteApiItem[], categoryOrder: [] };
+    return { items: body as GoodSiteApiItem[], categoryTree: [] };
   }
   if (!body || typeof body !== 'object') {
-    return { items: [], categoryOrder: [] };
+    return { items: [], categoryTree: [] };
   }
   const obj = body as Record<string, unknown>;
   const items = Array.isArray(obj.items) ? (obj.items as GoodSiteApiItem[]) : [];
-  const rawOrder = obj.categoryOrder ?? obj.category_order;
-  const categoryOrder = Array.isArray(rawOrder) ? rawOrder.map((c) => String(c)) : [];
-  return { items, categoryOrder };
+  const rawTree = obj.categoryTree ?? obj.category_tree;
+  const categoryTree = Array.isArray(rawTree) ? (rawTree as GoodSiteCategoryTreeApiItem[]) : [];
+  return { items, categoryTree };
 };

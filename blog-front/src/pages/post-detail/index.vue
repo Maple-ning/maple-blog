@@ -8,6 +8,8 @@ import { getPostBySlug } from '@/services/posts';
 
 const route = useRoute();
 const post = ref<Awaited<ReturnType<typeof getPostBySlug>>>(undefined);
+const isPostLoading = ref<boolean>(true);
+const postLoadError = ref<string>('');
 
 type TocItem = {
   id: string;
@@ -32,7 +34,11 @@ const slugify = (text: string) =>
 
 const htmlContent = computed(() => {
   const md = post.value?.content ?? '';
-  const rawHtml = marked.parse(md, { async: false }) as string;
+  const rawHtml = marked.parse(md, {
+    async: false,
+    gfm: true,
+    breaks: true,
+  }) as string;
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(`<div>${rawHtml}</div>`, 'text/html');
@@ -63,9 +69,22 @@ const htmlContent = computed(() => {
   return DOMPurify.sanitize(container.innerHTML, { ADD_ATTR: ['target', 'rel', 'id'] });
 });
 
-const loadPost = async () => {
+const loadPost = async (): Promise<void> => {
   const slug = String(route.params.slug ?? '');
-  post.value = await getPostBySlug(slug);
+  try {
+    isPostLoading.value = true;
+    postLoadError.value = '';
+    post.value = await getPostBySlug(slug);
+  } catch (error: unknown) {
+    post.value = undefined;
+    postLoadError.value = '博文加载失败，请稍后再试。';
+    console.error('[post-detail/index.vue:loadPost] getPostBySlug failed', {
+      error,
+      slug,
+    });
+  } finally {
+    isPostLoading.value = false;
+  }
 };
 
 const resolveScrollContainer = () =>
@@ -165,7 +184,29 @@ onBeforeUnmount(unbindTocSpy);
 </script>
 
 <template>
-  <section v-if="post" class="nova-post-detail space-y-4">
+  <section v-if="isPostLoading" class="nova-post-detail space-y-4">
+    <a-card class="nova-post-card">
+      <div class="nova-post-detail__loading">
+        <a-spin />
+        <span>博文加载中...</span>
+      </div>
+    </a-card>
+  </section>
+
+  <a-result
+    v-else-if="postLoadError"
+    status="error"
+    title="加载失败"
+    :sub-title="postLoadError"
+  >
+    <template #extra>
+      <RouterLink :to="{ name: backRouteName }">
+        <a-button type="primary">返回博文列表</a-button>
+      </RouterLink>
+    </template>
+  </a-result>
+
+  <section v-else-if="post" class="nova-post-detail space-y-4">
     <div class="nova-post-detail__crumb">
       <RouterLink :to="{ name: backRouteName }">博文</RouterLink>
       <span class="nova-post-detail__crumb-sep">/</span>
@@ -218,6 +259,15 @@ onBeforeUnmount(unbindTocSpy);
 </template>
 
 <style scoped>
+.nova-post-detail__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  color: var(--nova-text-muted);
+}
+
 .post-toc-link {
   display: block;
   margin: 0.35rem 0;

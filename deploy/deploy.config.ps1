@@ -15,14 +15,6 @@ return @{
       RemotePath  = "/home/blog-server"
       ProcessName = "blog-server"
       StartScript = "start"
-    },
-    @{
-      Name               = "blog-ai-server"
-      LocalPath          = "blog-ai-server"
-      RemotePath         = "/home/blog-ai-server"
-      ProcessName        = "blog-ai-server"
-      StartScript        = "start"
-      PostDeployCommands = @("npm run sql:ai-lab")
     }
   )
 
@@ -36,16 +28,6 @@ return @{
       Name       = "blog-front"
       LocalPath  = "blog-front"
       RemotePath = "/usr/share/nginx/html/blog-front"
-    },
-    @{
-      Name       = "blog-ai"
-      LocalPath  = "blog-ai"
-      RemotePath = "/usr/share/nginx/html/blog-ai"
-    },
-    @{
-      Name       = "blog-ai-admin"
-      LocalPath  = "blog-ai-admin"
-      RemotePath = "/usr/share/nginx/html/blog-ai-admin"
     }
   )
 }

@@ -19,6 +19,7 @@ declare module 'vue' {
     AMenu: typeof import('ant-design-vue/es')['Menu']
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
     AResult: typeof import('ant-design-vue/es')['Result']
+    ASpin: typeof import('ant-design-vue/es')['Spin']
     ATag: typeof import('ant-design-vue/es')['Tag']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     HomeHeroVisualPanel: typeof import('./components/home/HomeHeroVisualPanel.vue')['default']

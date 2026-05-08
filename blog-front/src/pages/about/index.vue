@@ -4,6 +4,8 @@ import { computed, onMounted, ref } from 'vue';
 import { getProfile } from '@/services/profile';
 
 const profile = ref<Awaited<ReturnType<typeof getProfile>>>(null);
+const isProfileLoading = ref<boolean>(true);
+const profileError = ref<string>('');
 const displayName = computed(() => profile.value?.name?.trim() || '');
 const displayTagline = computed(() => profile.value?.tagline?.trim() || '');
 const displayIntro = computed(() => profile.value?.intro?.trim() || '');
@@ -12,25 +14,30 @@ const displayEmail = computed(() => profile.value?.email?.trim() || '');
 const displayGithub = computed(() => profile.value?.github?.trim() || '');
 const displaySiteAbout = computed(() => profile.value?.siteAbout?.trim() || '');
 
-const defaultSiteAbout =
-  '枫叶小站聚合文章与项目；内容来自后台配置，欢迎阅读与交流。';
-
-const avatarChar = computed(() => {
-  const n = displayName.value;
-  if (n) return n[0];
-  return '🍁';
-});
+const defaultSiteAbout = '枫叶小站聚合文章与项目；内容来自后台配置，欢迎阅读与交流。';
 
 /** 支持填写 github.com/foo 或完整 https URL */
-const githubHref = (raw: string) => {
+const githubHref = (raw: string): string => {
   const u = raw.trim();
   if (!u) return '#';
   if (/^https?:\/\//i.test(u)) return u;
   return `https://${u}`;
 };
 
-onMounted(async () => {
-  profile.value = await getProfile();
+onMounted(async (): Promise<void> => {
+  try {
+    isProfileLoading.value = true;
+    profileError.value = '';
+    profile.value = await getProfile();
+  } catch (error: unknown) {
+    profileError.value = '资料加载失败，请稍后再试。';
+    console.error('[about/index.vue:onMounted] getProfile failed', {
+      error,
+      page: 'about',
+    });
+  } finally {
+    isProfileLoading.value = false;
+  }
 });
 </script>
 
@@ -39,23 +46,27 @@ onMounted(async () => {
     <div class="nova-about-hero">
       <div class="nova-about-hero-glow" aria-hidden="true" />
       <div class="nova-about-hero-inner">
-        <div class="nova-about-avatar" aria-hidden="true">{{ avatarChar }}</div>
         <div class="nova-about-hero-copy">
           <span class="nova-about-kicker">PROFILE</span>
           <a-tooltip :title="displayName || '简介'" placement="topLeft">
             <h1 class="nova-about-name">{{ displayName || '简介' }}</h1>
           </a-tooltip>
+          <p v-if="isProfileLoading" class="nova-about-intro nova-about-intro--muted">
+            资料加载中...
+          </p>
+          <p v-else-if="profileError" class="nova-about-intro nova-about-intro--muted">
+            {{ profileError }}
+          </p>
           <p v-if="displayTagline" class="nova-about-tagline">{{ displayTagline }}</p>
           <p v-if="displayIntro" class="nova-about-intro">{{ displayIntro }}</p>
-          <p v-else-if="!displayTagline" class="nova-about-intro nova-about-intro--muted">
+          <p
+            v-else-if="!isProfileLoading && !profileError && !displayTagline"
+            class="nova-about-intro nova-about-intro--muted"
+          >
             暂无简介，可在后台完善个人资料。
           </p>
           <div v-if="displayEmail || displayGithub" class="nova-about-actions">
-            <a
-              v-if="displayEmail"
-              class="nova-about-action"
-              :href="`mailto:${displayEmail}`"
-            >
+            <a v-if="displayEmail" class="nova-about-action" :href="`mailto:${displayEmail}`">
               邮箱
             </a>
             <a

@@ -4,6 +4,19 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# GNU tar (MSYS2) needs Unix-style forward-slash paths — PowerShell backslashes get mangled
+function To-UnixPath {
+  param([string]$WinPath)
+  return ($WinPath -replace '\\', '/' -replace '^([A-Z]):', '/$1')
+}
+
+# Use Git Bash GNU tar instead of C:\Windows\System32\tar.exe (which errors on Windows drive-letter paths)
+$TarCmd = "E:\Web Git\Git\usr\bin\tar.exe"
+if (-not (Test-Path $TarCmd)) {
+  $TarCmd = (Get-Command tar -ErrorAction SilentlyContinue | Where-Object { $_.Source -notlike "*\System32\*" } | Select-Object -First 1).Source
+}
+if (-not $TarCmd) { $TarCmd = "tar" }
+
 function Require-Command {
   param([string]$Name)
   if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -57,7 +70,12 @@ function Build-Frontend {
     Remove-Item $archivePath -Force
   }
 
-  $null = & tar -czf $archivePath -C $localPath dist 2>&1
+  Push-Location $localPath
+  try {
+    $null = & $TarCmd -czf (To-UnixPath $archivePath) dist 2>&1
+  } finally {
+    Pop-Location
+  }
   if (-not (Test-Path $archivePath)) {
     throw "Failed to create frontend archive: $archivePath"
   }
@@ -82,7 +100,12 @@ function Pack-Backend {
     Remove-Item $archivePath -Force
   }
 
-  $null = & tar -czf $archivePath -C $localPath --exclude=node_modules --exclude=.env . 2>&1
+  Push-Location $localPath
+  try {
+    $null = & $TarCmd -czf (To-UnixPath $archivePath) --exclude=node_modules --exclude=.env . 2>&1
+  } finally {
+    Pop-Location
+  }
   if (-not (Test-Path $archivePath)) {
     throw "Failed to create backend archive: $archivePath"
   }

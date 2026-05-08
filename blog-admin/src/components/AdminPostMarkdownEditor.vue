@@ -77,7 +77,7 @@ toolbars.splice(1, 0, 0, 1);
         <code class="syntax-code">[文字](url)</code> · <code class="syntax-code">![图](url)</code> · 列表
         <code class="syntax-code">- </code>/<code class="syntax-code">1. </code> ·
         <code class="syntax-code">&gt; </code>引用 · 代码块用上下各一行 <code class="syntax-code">```</code> ·
-        <code class="syntax-code">---</code> 分割线
+        <code class="syntax-code">---</code> 分割线 · 文章详情页普通回车也会换行；空一行表示新段落
       </span>
     </div>
     <MdEditor

@@ -34,8 +34,10 @@ const novaTheme = ref<NovaThemeId>(readThemeFromDom() ?? resolveInitialNovaTheme
 const mobileMenuOpen = ref(false);
 const contentScrollRef = ref<HTMLElement | null>(null);
 const particlesRef = ref<HTMLElement | null>(null);
+const displayedRouteName = ref<string>(String(route.name ?? ''));
 
 const isDark = computed(() => !isNovaLightTheme(novaTheme.value));
+const isHomeRoute = computed<boolean>(() => displayedRouteName.value === 'home');
 
 const antTheme = computed(() => ({
   algorithm: isDark.value ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
@@ -51,7 +53,7 @@ const navItems = computed<NavItem[]>(() => {
       (item): NavItem => ({
         name: String(item.name),
         label: (item.meta?.title as string) || String(item.name),
-      }),
+      })
     );
 
   return internalItems;
@@ -121,7 +123,8 @@ const rebuildParticles = () => {
   const el = particlesRef.value;
   if (!el) return;
   el.innerHTML = '';
-  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const count = reduced ? 0 : 20;
   for (let i = 0; i < count; i++) {
     const p = document.createElement('div');
@@ -139,6 +142,19 @@ const rebuildParticles = () => {
 
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
+const syncDisplayedRouteState = (): void => {
+  displayedRouteName.value = String(route.name ?? '');
+};
+
+const handlePageBeforeEnter = (): void => {
+  syncDisplayedRouteState();
+};
+
+const handlePageAfterEnter = async (): Promise<void> => {
+  await nextTick();
+  contentScrollRef.value?.scrollTo({ top: 0, behavior: 'auto' });
 };
 
 const resolveNavigationUrl = (href: string) => new URL(href, window.location.origin).toString();
@@ -182,7 +198,10 @@ const openPortalItem = (item: PortalItem) => {
 const isExternalHttpUrl = (href: string) => {
   try {
     const url = new URL(href, window.location.origin);
-    return (url.protocol === 'http:' || url.protocol === 'https:') && url.origin !== window.location.origin;
+    return (
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      url.origin !== window.location.origin
+    );
   } catch {
     return false;
   }
@@ -222,10 +241,8 @@ watch(
   async () => {
     mobileMenuOpen.value = false;
     document.title = `${currentPageTitle.value} - ${appConfig.appTitle}`;
-    await nextTick();
-    contentScrollRef.value?.scrollTo({ top: 0, behavior: 'auto' });
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 
@@ -248,22 +265,37 @@ watch(
         :active-nav-keys="activeNavKeys"
         :mobile-menu-open="mobileMenuOpen"
         :nova-theme="novaTheme"
+        :overlay-mode="isHomeRoute"
         @toggle-mobile-menu="toggleMobileMenu"
         @update-mobile-menu="mobileMenuOpen = $event"
         @toggle-nova-theme="toggleNovaTheme"
         @open-portal-item="openPortalItem"
       />
+      <div class="nova-header-spacer" aria-hidden="true" />
       <main
         ref="contentScrollRef"
         data-app-scroll-container="true"
-        class="relative z-[1] min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+        class="nova-app-scroll relative z-[1] min-h-0 flex-1 overflow-x-hidden overflow-y-scroll"
       >
-        <div class="blog-shell mx-auto w-full max-w-[1200px] px-6 py-10 md:px-6 md:py-12">
-          <RouterView v-slot="{ Component, route: currentRoute }">
-            <Transition name="page-switch" mode="out-in">
-              <component :is="Component" :key="currentRoute.fullPath" />
-            </Transition>
-          </RouterView>
+        <div
+          class="blog-shell relative mx-auto w-full max-w-[1200px] px-6 pb-10 md:px-6 md:pb-12"
+          :class="isHomeRoute ? 'pt-0' : 'pt-6 md:pt-8'"
+        >
+          <div class="nova-page-stage" aria-live="polite">
+            <RouterView v-slot="{ Component, route: currentRoute }">
+              <Transition
+                name="nova-page-fade"
+                mode="out-in"
+                appear
+                @before-enter="handlePageBeforeEnter"
+                @after-enter="handlePageAfterEnter"
+              >
+                <div :key="currentRoute.fullPath" class="nova-page-stage__view">
+                  <component :is="Component" />
+                </div>
+              </Transition>
+            </RouterView>
+          </div>
         </div>
       </main>
     </ConfigProvider>
@@ -271,20 +303,52 @@ watch(
 </template>
 
 <style scoped>
-.page-switch-enter-active,
-.page-switch-leave-active {
-  transition: opacity 0.26s ease;
+.nova-header-spacer {
+  height: 74px;
+  flex: 0 0 74px;
 }
 
-.page-switch-enter-from,
-.page-switch-leave-to {
+.nova-app-scroll {
+  scrollbar-gutter: stable;
+}
+
+.nova-page-stage {
+  position: relative;
+  isolation: isolate;
+  min-height: min(52vh, 680px);
+}
+
+.nova-page-stage__view {
+  width: 100%;
+}
+
+:deep(.nova-page-fade-enter-active),
+:deep(.nova-page-fade-leave-active) {
+  transition: opacity 0.18s ease;
+  will-change: opacity;
+}
+
+:deep(.nova-page-fade-enter-to),
+:deep(.nova-page-fade-leave-from) {
+  opacity: 1;
+}
+
+:deep(.nova-page-fade-enter-from),
+:deep(.nova-page-fade-leave-to) {
   opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-switch-enter-active,
-  .page-switch-leave-active {
-    transition: opacity 0.01s linear;
+  :deep(.nova-page-fade-enter-active),
+  :deep(.nova-page-fade-leave-active) {
+    transition: none;
+  }
+
+  :deep(.nova-page-fade-enter-from),
+  :deep(.nova-page-fade-enter-to),
+  :deep(.nova-page-fade-leave-from),
+  :deep(.nova-page-fade-leave-to) {
+    opacity: 1;
   }
 }
 </style>

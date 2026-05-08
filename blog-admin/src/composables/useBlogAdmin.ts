@@ -1,27 +1,38 @@
 import { ref } from 'vue';
 
-import { createPostApi, deletePostApi, getPostsApi, updatePostApi } from '@/api/modules/posts';
-import { getProfileApi, saveProfileApi } from '@/api/modules/profile';
 import {
+  createPrimaryGoodSiteCategoryApi,
+  createSecondaryGoodSiteCategoryApi,
   createGoodSiteApi,
+  deletePrimaryGoodSiteCategoryApi,
+  deleteSecondaryGoodSiteCategoryApi,
   deleteGoodSiteApi,
+  getGoodSiteCategoriesApi,
   getGoodSitesApi,
   updateGoodSiteApi,
   updateGoodSiteCategoryOrderApi,
 } from '@/api/modules/goodSites';
+import { createPostApi, deletePostApi, getPostsApi, updatePostApi } from '@/api/modules/posts';
+import { getProfileApi, saveProfileApi } from '@/api/modules/profile';
 import {
   createProjectApi,
   deleteProjectApi,
   getProjectsApi,
   updateProjectApi,
 } from '@/api/modules/projects';
-import type { AboutProfile, AdminGoodSite, AdminPost, AdminProject, PostStatus } from '@/types/content';
+import type {
+  AboutProfile,
+  AdminGoodSite,
+  AdminGoodSitePrimaryCategory,
+  AdminPost,
+  AdminProject,
+  PostStatus,
+} from '@/types/content';
 
 const posts = ref<AdminPost[]>([]);
 const projects = ref<AdminProject[]>([]);
 const goodSites = ref<AdminGoodSite[]>([]);
-/** 分类展示顺序（与前台下拉、分组一致） */
-const goodSiteCategoryOrder = ref<string[]>([]);
+const goodSiteCategoryTree = ref<AdminGoodSitePrimaryCategory[]>([]);
 const about = ref<AboutProfile>({
   name: '',
   tagline: '',
@@ -82,9 +93,10 @@ const loadAll = async () => {
   posts.value = postsRes.map(normalizePost);
   projects.value = projectsRes.map(normalizeProject);
   goodSites.value = Array.isArray(goodSitesRes.items) ? goodSitesRes.items : [];
-  goodSiteCategoryOrder.value = Array.isArray(goodSitesRes.categoryOrder)
-    ? goodSitesRes.categoryOrder
+  goodSiteCategoryTree.value = Array.isArray(goodSitesRes.categoryTree)
+    ? goodSitesRes.categoryTree
     : [];
+
   if (profileRes) {
     const p = profileRes as unknown as Record<string, unknown>;
     about.value = {
@@ -154,9 +166,36 @@ export const useBlogAdmin = () => {
     await loadAll();
   };
 
-  const saveGoodSiteCategoryOrder = async (order: string[]) => {
-    await updateGoodSiteCategoryOrderApi(order);
+  const deletePrimaryGoodSiteCategory = async (id: number) => {
+    await deletePrimaryGoodSiteCategoryApi(id);
     await loadAll();
+  };
+
+  const deleteSecondaryGoodSiteCategory = async (id: number) => {
+    await deleteSecondaryGoodSiteCategoryApi(id);
+    await loadAll();
+  };
+
+  const createPrimaryGoodSiteCategory = async (label: string) => {
+    await createPrimaryGoodSiteCategoryApi(label);
+    await loadAll();
+  };
+
+  const createSecondaryGoodSiteCategory = async (primaryCategory: string, label: string) => {
+    await createSecondaryGoodSiteCategoryApi(primaryCategory, label);
+    await loadAll();
+  };
+
+  const saveGoodSiteCategoryOrder = async (payload: {
+    primaryOrder: string[];
+    secondaryOrder: Array<{ primaryCategory: string; order: string[] }>;
+  }) => {
+    await updateGoodSiteCategoryOrderApi(payload);
+    await loadAll();
+  };
+
+  const refreshGoodSiteCategories = async () => {
+    goodSiteCategoryTree.value = await getGoodSiteCategoriesApi();
   };
 
   const saveAbout = async (payload: AboutProfile) => {
@@ -171,7 +210,7 @@ export const useBlogAdmin = () => {
     posts,
     projects,
     goodSites,
-    goodSiteCategoryOrder,
+    goodSiteCategoryTree,
     about,
     init,
     loadAll,
@@ -182,7 +221,12 @@ export const useBlogAdmin = () => {
     deleteProject,
     upsertGoodSite,
     deleteGoodSite,
+    deletePrimaryGoodSiteCategory,
+    deleteSecondaryGoodSiteCategory,
+    createPrimaryGoodSiteCategory,
+    createSecondaryGoodSiteCategory,
     saveGoodSiteCategoryOrder,
+    refreshGoodSiteCategories,
     saveAbout,
   };
 };

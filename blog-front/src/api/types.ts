@@ -34,6 +34,21 @@ export interface GoodSiteApiItem {
   title: string;
   url: string;
   description: string;
+  primary_category?: string;
+  secondary_category?: string;
   category: string;
   sort_order: number;
+}
+
+export interface GoodSiteCategoryTreeApiItem {
+  id: number;
+  key: string;
+  label: string;
+  sortOrder: number;
+  children: Array<{
+    id: number;
+    key: string;
+    label: string;
+    sortOrder: number;
+  }>;
 }

@@ -26,8 +26,11 @@ vi.mock('@/api/modules/profile', () => ({
 }));
 
 vi.mock('@/api/modules/goodSites', () => ({
+  createPrimaryGoodSiteCategoryApi: vi.fn(),
+  createSecondaryGoodSiteCategoryApi: vi.fn(),
   createGoodSiteApi: vi.fn(),
   deleteGoodSiteApi: vi.fn(),
+  getGoodSiteCategoriesApi: vi.fn(),
   getGoodSitesApi: vi.fn(),
   updateGoodSiteApi: vi.fn(),
   updateGoodSiteCategoryOrderApi: vi.fn(),
@@ -72,11 +75,28 @@ describe('useBlogAdmin', () => {
           title: 'Example',
           url: 'https://example.com',
           description: '',
+          primaryCategory: '前端',
+          secondaryCategory: '工具',
           category: '工具',
           sortOrder: 0,
         },
       ],
-      categoryOrder: ['工具'],
+      categoryTree: [
+        {
+          id: 1,
+          key: 'frontend',
+          label: '前端',
+          sortOrder: 0,
+          children: [
+            {
+              id: 11,
+              key: 'tools',
+              label: '工具',
+              sortOrder: 0,
+            },
+          ],
+        },
+      ],
     });
 
     const admin = useBlogAdmin();
@@ -87,7 +107,8 @@ describe('useBlogAdmin', () => {
     expect(admin.about.value.name).toBe('Ning');
     expect(admin.goodSites.value).toHaveLength(1);
     expect(admin.goodSites.value[0]?.category).toBe('工具');
-    expect(admin.goodSiteCategoryOrder.value).toEqual(['工具']);
+    expect(admin.goodSiteCategoryTree.value[0]?.label).toBe('前端');
+    expect(admin.goodSiteCategoryTree.value[0]?.children[0]?.label).toBe('工具');
     expect(admin.postsByStatus('published')).toHaveLength(1);
   });
 });

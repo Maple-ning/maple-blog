@@ -35,6 +35,23 @@ export interface AdminGoodSite {
   title: string;
   url: string;
   description: string;
+  primaryCategory: string;
+  secondaryCategory: string;
   category: string;
   sortOrder: number;
+}
+
+export interface AdminGoodSiteSecondaryCategory {
+  id: number;
+  key: string;
+  label: string;
+  sortOrder: number;
+}
+
+export interface AdminGoodSitePrimaryCategory {
+  id: number;
+  key: string;
+  label: string;
+  sortOrder: number;
+  children: AdminGoodSiteSecondaryCategory[];
 }

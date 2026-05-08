@@ -16,6 +16,8 @@ withDefaults(
 
 const keyword = ref('');
 const posts = ref<PostItem[]>([]);
+const isLoading = ref<boolean>(true);
+const loadError = ref<string>('');
 const router = useRouter();
 
 type FilterPill = { kind: 'all' } | { kind: 'tag'; tag: string };
@@ -52,8 +54,20 @@ const articleCountLabel = computed(() => `${filteredPosts.value.length} 篇`);
 
 const estReadMinutes = (post: PostItem) => Math.max(1, Math.ceil((post.content?.length ?? 0) / 1200));
 
-onMounted(async () => {
-  posts.value = await getAllPublishedPosts();
+onMounted(async (): Promise<void> => {
+  try {
+    isLoading.value = true;
+    loadError.value = '';
+    posts.value = await getAllPublishedPosts();
+  } catch (error: unknown) {
+    loadError.value = '博文加载失败，请稍后再试。';
+    console.error('[NovaArticlesFeed:onMounted] getAllPublishedPosts failed', {
+      error,
+      page: 'posts',
+    });
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 const goDetail = (slug: string) => {
@@ -119,7 +133,19 @@ const isPillTag = (tag: string) => activePill.value.kind === 'tag' && activePill
       </button>
     </div>
 
-    <div class="nova-articles-list">
+    <div v-if="isLoading" class="nova-articles-loading">
+      <a-spin />
+      <span>博文加载中...</span>
+    </div>
+
+    <a-result
+      v-else-if="loadError"
+      status="error"
+      title="加载失败"
+      :sub-title="loadError"
+    />
+
+    <div v-else class="nova-articles-list">
       <article
         v-for="post in filteredPosts"
         :key="post.slug"
@@ -148,6 +174,17 @@ const isPillTag = (tag: string) => activePill.value.kind === 'tag' && activePill
       </article>
     </div>
 
-    <a-empty v-if="filteredPosts.length === 0" description="没有匹配的博文" />
+    <a-empty v-if="!isLoading && !loadError && filteredPosts.length === 0" description="没有匹配的博文" />
   </div>
 </template>
+
+<style scoped>
+.nova-articles-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  color: var(--nova-text-muted);
+}
+</style>
